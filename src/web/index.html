@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virsa3D - Digital Heritage 3D Reconstruction & Preservation</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Three.js and OrbitControls and PLYLoader via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
+</head>
+<body>
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-icon">🏛️</div>
+      <div class="brand-text">
+        <h1>VIRSA3D</h1>
+        <span class="subtitle">AI-Assisted Archaeological Heritage Preservation</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="model-switch-container">
+        <button id="btn-baseline" class="switch-btn" onclick="switchModel('baseline')">
+          Baseline (Fadilah et al.)
+        </button>
+        <button id="btn-proposed" class="switch-btn active" onclick="switchModel('proposed')">
+          Proposed (Virsa3D Refined)
+        </button>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span id="site-status">Live 3D Scene</span>
+      </div>
+      <button class="icon-btn" onclick="togglePanel('meta-panel')" title="Site Metadata">ℹ️ Info</button>
+      <button class="icon-btn" onclick="togglePanel('metrics-panel')" title="Research Metrics">📊 Metrics</button>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <div class="main-container">
+    <!-- Left Controls Panel -->
+    <aside class="left-panel">
+      <div class="panel-section">
+        <h3>🔍 Semantic Layers</h3>
+        <p class="section-desc">Toggle architectural and terrain classes:</p>
+        <div class="layer-toggles">
+          <label class="toggle-item">
+            <input type="checkbox" id="layer-structure" checked onchange="updateSemanticFilters()">
+            <span class="color-dot dot-structure"></span>
+            <span class="layer-label">Temple Structure</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="layer-ground" checked onchange="updateSemanticFilters()">
+            <span class="color-dot dot-ground"></span>
+            <span class="layer-label">Ground & Pathway</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="layer-vegetation" checked onchange="updateSemanticFilters()">
+            <span class="color-dot dot-vegetation"></span>
+            <span class="layer-label">Vegetation & Trees</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>⚙️ Display Controls</h3>
+        <div class="control-row">
+          <label>Point / Splat Size</label>
+          <input type="range" id="slider-point-size" min="0.05" max="0.5" step="0.01" value="0.18" oninput="changePointSize(this.value)">
+          <span id="val-point-size">0.18</span>
+        </div>
+        <div class="control-row">
+          <label>Camera Rotation</label>
+          <button id="btn-autorotate" class="action-btn" onclick="toggleAutoRotate()">Auto-Rotate: OFF</button>
+        </div>
+        <div class="control-row">
+          <button class="action-btn secondary" onclick="resetCamera()">Reset Camera View</button>
+        </div>
+      </div>
+
+      <div class="panel-section stats-section">
+        <h3>📡 Scene Telemetry</h3>
+        <div class="telemetry-grid">
+          <div><span class="k">Gaussians:</span> <span id="tele-points" class="v">Loading...</span></div>
+          <div><span class="k">Voxels:</span> <span id="tele-voxels" class="v">11,549</span></div>
+          <div><span class="k">Resolution:</span> <span class="v">0.5m grid</span></div>
+          <div><span class="k">Model State:</span> <span id="tele-state" class="v highlight">Proposed</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 3D Canvas Container -->
+    <main id="canvas-container">
+      <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-text">Streaming 3D Gaussian Splatting Scene...</div>
+      </div>
+      <div class="canvas-hud">
+        <div class="hud-item">Left Click: <strong>Rotate</strong></div>
+        <div class="hud-item">Right Click: <strong>Pan</strong></div>
+        <div class="hud-item">Scroll: <strong>Zoom</strong></div>
+      </div>
+    </main>
+
+    <!-- Right Slide-over: Heritage Metadata Panel -->
+    <aside id="meta-panel" class="slide-panel right active">
+      <div class="panel-header">
+        <h2>🏛️ Archaeological Heritage Metadata</h2>
+        <button class="close-btn" onclick="togglePanel('meta-panel')">×</button>
+      </div>
+      <div class="panel-content">
+        <div class="meta-card">
+          <h4 id="meta-site-name">Historical Temple Complex</h4>
+          <span class="badge" id="meta-period">Hindu Shahi Period (c. 7th-10th c. CE)</span>
+          <p id="meta-region" class="region-text">📍 Salt Range, Punjab, Pakistan</p>
+        </div>
+
+        <div class="meta-section">
+          <h4>🛰️ GIS & Drone Flight Coordinates</h4>
+          <table class="meta-table">
+            <tr><td>Latitude:</td><td id="meta-lat" class="code">32.5084334° N</td></tr>
+            <tr><td>Longitude:</td><td id="meta-lon" class="code">71.9363274° E</td></tr>
+            <tr><td>Altitude Range:</td><td id="meta-alt" class="code">802.68m - 842.39m</td></tr>
+            <tr><td>UAV Images:</td><td id="meta-images" class="code">72 images</td></tr>
+            <tr><td>Drone Sensor:</td><td id="meta-drone" class="code">DJI FC8482</td></tr>
+          </table>
+        </div>
+
+        <div class="meta-section">
+          <h4>Architecture & Significance</h4>
+          <ul id="meta-features" class="feature-list">
+            <li>Curvilinear stone shikhara (superstructure tower)</li>
+            <li>Dressed sandstone ashlar masonry construction</li>
+            <li>Trifoliate pedimented sanctum entrance</li>
+            <li>Outer circumambulatory terrace</li>
+          </ul>
+        </div>
+
+        <div class="meta-section">
+          <h4>Project Team & Academic Supervision</h4>
+          <p class="small-text"><strong>Project:</strong> Virsa3D - BS Final Year Project</p>
+          <p class="small-text"><strong>Institution:</strong> FAST-NUCES, Chiniot-Faisalabad</p>
+          <p class="small-text"><strong>Authors:</strong> Abubakar Siddique, Mubashra Afzal, Zia Ur Rehman</p>
+          <p class="small-text"><strong>Supervisor:</strong> Mr. Umar Iqbal</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Slide-over: Research Comparison Metrics Panel -->
+    <aside id="metrics-panel" class="slide-panel right">
+      <div class="panel-header">
+        <h2>📊 Scientific Research Evaluation</h2>
+        <button class="close-btn" onclick="togglePanel('metrics-panel')">×</button>
+      </div>
+      <div class="panel-content">
+        <div class="metrics-banner">
+          <div>
+            <span class="num" id="metric-discrepancies">13.89M</span>
+            <span class="lbl">Cross-View Conflicts Resolved</span>
+          </div>
+          <div>
+            <span class="num highlight" id="metric-floaters">475</span>
+            <span class="lbl">3DGS Floaters Pruned</span>
+          </div>
+        </div>
+
+        <div class="meta-section">
+          <h4>Quantitative Comparison (Table 2 Format)</h4>
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Base IoU</th>
+                <th>Prop IoU</th>
+                <th>Base F1</th>
+                <th>Prop F1</th>
+              </tr>
+            </thead>
+            <tbody id="metrics-table-body">
+              <tr>
+                <td><strong>Ground</strong></td>
+                <td>25.2%</td>
+                <td class="prop">24.1%</td>
+                <td>40.3%</td>
+                <td class="prop">38.9%</td>
+              </tr>
+              <tr>
+                <td><strong>Structure</strong></td>
+                <td>35.7%</td>
+                <td class="prop">35.6%</td>
+                <td>52.6%</td>
+                <td class="prop">52.5%</td>
+              </tr>
+              <tr>
+                <td><strong>Vegetation</strong></td>
+                <td>3.1%</td>
+                <td class="prop">2.5%</td>
+                <td>5.9%</td>
+                <td class="prop">5.0%</td>
+              </tr>
+              <tr class="highlight-row">
+                <td><strong>Mean (Macro)</strong></td>
+                <td>21.3%</td>
+                <td class="prop">20.8%</td>
+                <td>32.9%</td>
+                <td class="prop">32.1%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="meta-section">
+          <h4>Baseline Reference</h4>
+          <p class="small-text">W. A. Fadilah et al., <em>"Automatic Segmentation of 3D Gaussian Splatting in Cultural Heritage Complex,"</em> ISPRS Archives, 2026.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
