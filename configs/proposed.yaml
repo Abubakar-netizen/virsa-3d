@@ -1,0 +1,26 @@
+# Proposed Virsa3D Configuration
+mode: "proposed"
+name: "Multi-View Semantic Consistency & Label Refinement Pipeline"
+
+segmentation:
+  model_type: "sam"
+  confidence_threshold: 0.5
+  per_class_prompting: true
+
+consistency_refinement:
+  enabled: true  # Key research contribution
+  min_overlapping_views: 2
+  reprojection_error_threshold_px: 3.0
+  consistency_agreement_threshold: 0.60
+  consensus_method: "confidence_weighted_voting" # ["majority", "confidence_weighted_voting", "bayesian"]
+  boundary_refinement:
+    enabled: true
+    crf_iterations: 5
+    kernel_size: 5
+
+reconstruction:
+  method: "semantically_consistent_splatting"
+  iterations: 15000
+  densification_interval: 100
+  voxel_size: 0.5
+

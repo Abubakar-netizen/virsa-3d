@@ -1,0 +1,18 @@
+# Baseline Configuration (following Fadilah et al., ISPRS 2026)
+mode: "baseline"
+name: "Direct 2D-to-3D Semantic Splatting"
+
+segmentation:
+  model_type: "sam" # Supports 'sam', 'fastsam', 'heuristics_proxy' for CPU
+  confidence_threshold: 0.5
+  per_class_prompting: true
+
+consistency_refinement:
+  enabled: false  # In the baseline, NO cross-view consistency checking is performed!
+
+reconstruction:
+  method: "per_class_splatting"
+  iterations: 15000
+  densification_interval: 100
+  voxel_size: 0.5
+

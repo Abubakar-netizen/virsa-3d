@@ -1,0 +1,46 @@
+project:
+  name: "Virsa3D"
+  description: "AI-Assisted 3D Reconstruction and Multi-View Consistent Semantic Segmentation"
+  version: "1.0.0"
+
+paths:
+  raw_data_dir: "data"
+  processed_data_dir: "data/processed"
+  baseline_output_dir: "outputs/baseline"
+  proposed_output_dir: "outputs/proposed"
+  evaluation_output_dir: "outputs/evaluation"
+
+dataset:
+  classes:
+    - id: 0
+      name: "background"
+      color: [0, 0, 0]
+    - id: 1
+      name: "ground"
+      color: [128, 64, 128]
+      prompt: "ground terrain pathway courtyard road"
+    - id: 2
+      name: "structure"
+      color: [70, 70, 70]
+      prompt: "historical temple architectural building roof wall dome facade"
+    - id: 3
+      name: "vegetation"
+      color: [107, 142, 35]
+      prompt: "trees vegetation greenery shrubs plants foliage"
+  
+preprocessing:
+  target_max_dimension: 1920
+  thumbnail_dimension: 512
+  blur_laplacian_threshold: 100.0
+  extract_exif_gps: true
+  supported_extensions: [".jpg", ".jpeg", ".png"]
+
+sfm:
+  matcher: "sift"
+  min_match_count: 15
+  ransac_threshold: 3.0
+
+splatting:
+  voxel_size: 0.5  # As specified in Fadilah et al. (0.5 x 0.5 x 0.5 m)
+  max_iterations: 15000
+
