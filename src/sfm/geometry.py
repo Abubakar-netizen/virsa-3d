@@ -174,3 +174,7 @@ class RealSfMTriangulator:
 
         print(f"[SfM SUCCESS] Successfully triangulated {len(positions)} REAL 3D architectural tie-points!")
         return positions, colors, filtered_observations
+
+
+# Backward compatibility alias
+MultiViewGeometry = RealSfMTriangulator

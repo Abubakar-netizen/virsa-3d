@@ -1,6 +1,53 @@
-.venv/
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-data/processed/images/
-data/processed/thumbnails/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Large dataset directory (raw drone images > 2.8 GB)
+data/*
+!data/.gitkeep
+!data/README.md
+
+# Pipeline execution artifacts & models
 outputs/
+
+# Archives & compressed bundles
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
+# Cluster documentation with internal server & credentials
+FAST_NUCES_CFD_HPC_Cluster_Documentation.md
+
+# LaTeX temporary / intermediate build files
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp

@@ -47,9 +47,17 @@ Outputs (outputs/baseline/)               Outputs (outputs/proposed/)           
 
 ## 3. Quick Start & Execution
 
-### Prerequisites
+### Prerequisites & Installation
 * Python 3.10+
-* Environment created with `uv` or standard virtual environment.
+* Install required dependencies:
+  ```bash
+  pip install -r requirements.txt
+  ```
+* (Optional for HPC execution) Set up your environment variables:
+  ```bash
+  cp .env.example .env
+  # Configure your HPC_PASSWORD in .env
+  ```
 
 ### Run Pipelines:
 1. **Run Baseline Pipeline:**

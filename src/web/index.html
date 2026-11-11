@@ -75,8 +75,8 @@
         <h3>⚙️ Display Controls</h3>
         <div class="control-row">
           <label>Point / Splat Size</label>
-          <input type="range" id="slider-point-size" min="0.05" max="0.5" step="0.01" value="0.18" oninput="changePointSize(this.value)">
-          <span id="val-point-size">0.18</span>
+          <input type="range" id="slider-point-size" min="0.02" max="0.3" step="0.01" value="0.11" oninput="changePointSize(this.value)">
+          <span id="val-point-size">0.11</span>
         </div>
         <div class="control-row">
           <label>Camera Rotation</label>
@@ -84,6 +84,30 @@
         </div>
         <div class="control-row">
           <button class="action-btn secondary" onclick="resetCamera()">Reset Camera View</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>🎥 Camera Presets</h3>
+        <p class="section-desc">Quick jump to site landmarks:</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('panorama')">🌐 Full Site</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('main_front')">🏛️ Main Front</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('main_right')">🏛️ Main Right</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('main_rear')">🏛️ Main Rear</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('main_left')">🏛️ Main Left</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('main_sockets')">🕳️ Socket Holes Macro</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('small')">🛕 Small Temple (Oblique)</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('small_side')">📐 Small Gate 2-Step</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('small_front')">🚪 Small Front Arch</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('small_roof')">🛕 Small Roof Top</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('stairs')">🪜 Stairs & Path</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('mountains')">⛰️ Mountain Backdrop</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('mountains_cliff')">🧗 Limestone Cliffs</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('mountains_bastion')">🏰 Mountain Bastion Ruins</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('small_mountains')">🛕⛰️ Small Temple Backdrop</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('mountains_right')">⛰️ Right Mountain Ridge</button>
+          <button class="action-btn secondary" style="padding: 6px; font-size: 11px;" onclick="setCameraPreset('mountains_left')">⛰️ Left Mountain Ridge</button>
         </div>
       </div>
 
@@ -164,11 +188,11 @@
       <div class="panel-content">
         <div class="metrics-banner">
           <div>
-            <span class="num" id="metric-discrepancies">13.89M</span>
+            <span class="num" id="metric-discrepancies">6,034</span>
             <span class="lbl">Cross-View Conflicts Resolved</span>
           </div>
           <div>
-            <span class="num highlight" id="metric-floaters">475</span>
+            <span class="num highlight" id="metric-floaters">360</span>
             <span class="lbl">3DGS Floaters Pruned</span>
           </div>
         </div>
@@ -229,3 +253,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+

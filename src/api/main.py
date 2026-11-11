@@ -103,24 +103,55 @@ def get_metrics_comparison():
 @app.get("/api/models/{model_name}")
 def get_model(model_name: str):
     """Serves binary PLY 3D models for rendering in browser."""
-    model_map = {
-        "baseline": OUTPUTS_DIR / "baseline" / "baseline_temple_3dgs.ply",
-        "proposed": OUTPUTS_DIR / "proposed" / "proposed_temple_3dgs.ply",
-        "structure": OUTPUTS_DIR / "proposed" / "classes" / "structure_refined_3dgs.ply",
-        "ground": OUTPUTS_DIR / "proposed" / "classes" / "ground_refined_3dgs.ply",
-        "vegetation": OUTPUTS_DIR / "proposed" / "classes" / "vegetation_refined_3dgs.ply"
+    candidates = {
+        "baseline": [
+            OUTPUTS_DIR / "baseline" / "models" / "baseline_scene.ply",
+            OUTPUTS_DIR / "baseline" / "baseline_temple_3dgs.ply",
+        ],
+        "proposed": [
+            OUTPUTS_DIR / "proposed" / "models" / "proposed_scene.ply",
+            OUTPUTS_DIR / "proposed" / "proposed_temple_3dgs.ply",
+        ],
+        "structure": [
+            OUTPUTS_DIR / "proposed" / "classes" / "structure_refined_3dgs.ply",
+        ],
+        "ground": [
+            OUTPUTS_DIR / "proposed" / "classes" / "ground_refined_3dgs.ply",
+        ],
+        "vegetation": [
+            OUTPUTS_DIR / "proposed" / "classes" / "vegetation_refined_3dgs.ply",
+        ],
+        "mesh": [
+            OUTPUTS_DIR / "proposed" / "models" / "amb_temple_textured_mesh.obj",
+        ],
+        "mtl": [
+            OUTPUTS_DIR / "proposed" / "models" / "amb_temple_textured_mesh.mtl",
+        ],
+        "texture": [
+            OUTPUTS_DIR / "proposed" / "models" / "amb_temple_texture_atlas.png",
+        ]
     }
 
-    file_path = model_map.get(model_name.lower())
-    if not file_path or not file_path.exists():
-        raise HTTPException(status_code=404, detail=f"Model '{model_name}' not found at {file_path}")
+    file_paths = candidates.get(model_name.lower())
+    if not file_paths:
+        raise HTTPException(status_code=404, detail=f"Model key '{model_name}' invalid")
+
+    target_file = None
+    for p in file_paths:
+        if p.exists():
+            target_file = p
+            break
+
+    if not target_file:
+        raise HTTPException(status_code=404, detail=f"Model '{model_name}' file not found")
 
     return FileResponse(
-        path=str(file_path),
-        filename=file_path.name,
+        path=str(target_file),
+        filename=target_file.name,
         media_type="application/octet-stream"
     )
 
 # Mount web frontend
 if WEB_DIR.exists():
     app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="static")
+

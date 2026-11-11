@@ -1,0 +1,19 @@
+# Core Computer Vision & Deep Learning
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.24.0
+opencv-python>=4.8.0
+Pillow>=10.0.0
+scipy>=1.10.0
+plyfile>=1.0.0
+matplotlib>=3.7.0
+pyyaml>=6.0.0
+
+# API & Interactive 3D Web Viewer
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
+
+# HPC Cluster & Remote Synchronization
+paramiko>=3.3.0
+python-dotenv>=1.0.0

@@ -133,15 +133,41 @@ class ImagePreprocessor:
             "quality_status": "acceptable" if is_sharp else "low_sharpness"
         }
 
-    def process_image(self, image_path: Path) -> Dict[str, Any]:
+    def process_image(self, image_path: Path, overwrite: bool = False) -> Dict[str, Any]:
         """Process a single image: extract EXIF, evaluate blur, downscale and save cache."""
+        stem = image_path.stem
+        clean_stem = stem.replace(".JPG", "").replace(".jpg", "")
+        out_filename = f"{clean_stem}.jpg"
+        proc_img_path = self.images_dir / out_filename
+        thumb_img_path = self.thumbnails_dir / out_filename
+
+        exif_info = self.extract_exif(image_path)
+
+        # Check if already processed
+        if not overwrite and proc_img_path.exists() and thumb_img_path.exists():
+            cached_img = cv2.imread(str(proc_img_path))
+            if cached_img is not None:
+                new_h, new_w = cached_img.shape[:2]
+                quality_info = self.assess_quality(cached_img)
+                return {
+                    "image_id": clean_stem,
+                    "original_filename": image_path.name,
+                    "original_dimensions": [new_w, new_h],
+                    "processed_dimensions": [new_w, new_h],
+                    "scale_factor": 1.0,
+                    "processed_path": str(proc_img_path).replace("\\", "/"),
+                    "thumbnail_path": str(thumb_img_path).replace("\\", "/"),
+                    "quality": quality_info,
+                    "exif": exif_info,
+                    "cached": True
+                }
+
         img_bgr = cv2.imread(str(image_path))
         if img_bgr is None:
             raise ValueError(f"Could not read image: {image_path}")
 
         orig_h, orig_w = img_bgr.shape[:2]
         quality_info = self.assess_quality(img_bgr)
-        exif_info = self.extract_exif(image_path)
 
         # Compute scaling factor for working resolution
         max_dim = max(orig_h, orig_w)
@@ -161,15 +187,6 @@ class ImagePreprocessor:
         thumb_h = int(new_h * thumb_scale)
         thumb_bgr = cv2.resize(resized_bgr, (thumb_w, thumb_h), interpolation=cv2.INTER_AREA)
 
-        # Save processed working image and thumbnail
-        stem = image_path.stem
-        # Clean extension if duplicated like .JPG.jpeg
-        clean_stem = stem.replace(".JPG", "").replace(".jpg", "")
-        out_filename = f"{clean_stem}.jpg"
-        
-        proc_img_path = self.images_dir / out_filename
-        thumb_img_path = self.thumbnails_dir / out_filename
-
         cv2.imwrite(str(proc_img_path), resized_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
         cv2.imwrite(str(thumb_img_path), thumb_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
 
@@ -182,7 +199,8 @@ class ImagePreprocessor:
             "processed_path": str(proc_img_path).replace("\\", "/"),
             "thumbnail_path": str(thumb_img_path).replace("\\", "/"),
             "quality": quality_info,
-            "exif": exif_info
+            "exif": exif_info,
+            "cached": False
         }
 
     def process_all(self, limit: Optional[int] = None) -> Dict[str, Any]:
