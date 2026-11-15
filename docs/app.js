@@ -232,6 +232,13 @@ function loadDevelopmentModel(lodType = "fast") {
     : "static/amb_temple_web.glb";
 
   const loader = new THREE.GLTFLoader();
+  
+  // High-performance Draco geometry decoder for instantaneous multi-million face loading
+  if (THREE.DRACOLoader) {
+    const dracoLoader = new THREE.DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
+    loader.setDRACOLoader(dracoLoader);
+  }
 
   loader.load(
     modelUrl,
@@ -306,20 +313,18 @@ function loadDevelopmentModel(lodType = "fast") {
       }
     },
     function (error) {
-      console.error("GLTF load failed, falling back to OBJ:", error);
-      loadFallbackObj();
+      console.error("GLTF load failed, falling back to fast web model:", error);
+      if (lodType === "master") {
+        loadDevelopmentModel("fast");
+      } else {
+        showLoading(false);
+      }
     }
   );
 }
 
 function loadFallbackObj() {
-  const objLoader = new THREE.OBJLoader();
-  objLoader.load("/static/amb_temple_web.obj", function (obj) {
-    while (currentMeshGroup.children.length > 0) currentMeshGroup.remove(currentMeshGroup.children[0]);
-    activeModelMesh = obj;
-    currentMeshGroup.add(activeModelMesh);
-    showLoading(false);
-  });
+  showLoading(false);
 }
 
 function setTextureMode(mode) {
