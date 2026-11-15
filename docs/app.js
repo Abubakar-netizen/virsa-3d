@@ -68,8 +68,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function initThree() {
   const container = document.getElementById("canvas-container");
-  const width = container.clientWidth;
-  const height = container.clientHeight;
+  const width = Math.max(container.clientWidth || window.innerWidth, 320);
+  const height = Math.max(container.clientHeight || (window.innerHeight - 64), 240);
 
   // Scene setup with atmospheric fog matching the Salt Range limestone plateau
   scene = new THREE.Scene();
@@ -87,7 +87,7 @@ function initThree() {
   // WebGL Renderer with High-DPI & Tone Mapping
   renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: false });
   renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
   renderer.outputEncoding = THREE.sRGBEncoding;
@@ -174,8 +174,9 @@ function animate() {
 
 function onWindowResize() {
   const container = document.getElementById("canvas-container");
-  const width = container.clientWidth;
-  const height = container.clientHeight;
+  if (!container || !camera || !renderer) return;
+  const width = Math.max(container.clientWidth || window.innerWidth, 320);
+  const height = Math.max(container.clientHeight || (window.innerHeight - 64), 240);
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
