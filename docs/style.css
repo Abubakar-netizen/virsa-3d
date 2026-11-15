@@ -184,6 +184,32 @@ body {
   box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
 }
 
+.author-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.25));
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  color: #38bdf8;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+  letter-spacing: 0.3px;
+}
+
+.author-pill .author-icon {
+  font-size: 13px;
+}
+
+.hud-item.author-tag {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #38bdf8;
+  font-weight: 600;
+}
+
 .download-pill {
   background: linear-gradient(135deg, #0284c7, #0369a1);
   color: #fff;

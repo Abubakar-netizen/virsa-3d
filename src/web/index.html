@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Virsa3D — Amb Hindu Shahi Temple 3D Digital Twin & AI Conservation System</title>
+  <title>Virsa3D — Amb Hindu Shahi Temple 3D Digital Twin | Abubakar Siddique</title>
   <link rel="stylesheet" href="style.css?v=20261115_final">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@
       <div class="logo-icon">🏛️</div>
       <div class="brand-text">
         <h1>VIRSA3D</h1>
-        <span class="subtitle">AI Cultural Heritage Digital Twin & Conservation Platform</span>
+        <span class="subtitle">AI Cultural Heritage Digital Twin • <strong>Abubakar Siddique</strong></span>
       </div>
     </div>
 
@@ -49,14 +49,18 @@
 
     <!-- Header Actions & Status -->
     <div class="header-right">
+      <div class="author-pill" title="Lead Researcher & Developer">
+        <span class="author-icon">👤</span>
+        <span class="author-name">Abubakar Siddique</span>
+      </div>
       <div class="status-indicator">
         <span class="pulse-dot"></span>
-        <span id="site-status">Digital Twin Live (4K Textures)</span>
+        <span id="site-status">Uncompressed 4K Master (2.92M)</span>
       </div>
       <button id="btn-meta-panel" class="icon-btn" onclick="togglePanel('meta-panel')" title="Archaeological Metadata">ℹ️ Site Context</button>
       <button id="btn-metrics-panel" class="icon-btn" onclick="togglePanel('metrics-panel')" title="Research Benchmarks">📊 Research Benchmarks</button>
-      <a href="static/amb_temple_textured_model.glb" download="amb_temple_master_mesh.glb" class="download-pill" title="Download Master 3D GLB (2.92M Faces)">
-        📥 Download 3D (GLB)
+      <a href="static/amb_temple_textured_model.glb" download="amb_temple_original_uncompressed_master_2.92M.glb" class="download-pill" title="Download Original Uncompressed Master 3D GLB (2,917,998 Faces, 92.9 MB)">
+        📥 Download Original 3D (92.9 MB)
       </a>
     </div>
   </header>
@@ -83,8 +87,8 @@
         <div class="panel-section">
           <h3>⚡ Model Resolution (LOD)</h3>
           <div class="lod-switch">
-            <button class="action-btn active" id="btn-lod-fast" onclick="switchLod('fast')">⚡ 60 FPS Web Twin (300k Faces)</button>
-            <button class="action-btn secondary" id="btn-lod-master" onclick="switchLod('master')">💎 Ultra-Dense Master (2.92M Faces)</button>
+            <button class="action-btn active" id="btn-lod-master" onclick="switchLod('master')">💎 Original Master (2.92M Faces)</button>
+            <button class="action-btn secondary" id="btn-lod-fast" onclick="switchLod('fast')">⚡ 60 FPS Web Twin (300k Faces)</button>
           </div>
         </div>
 
@@ -230,9 +234,9 @@
       <div class="panel-section stats-section">
         <h3>📡 Scene Telemetry</h3>
         <div class="telemetry-grid">
-          <div><span class="k">Active Mesh:</span> <span id="tele-mesh-name" class="v highlight">Web 4K Twin</span></div>
-          <div><span class="k">Polygons:</span> <span id="tele-faces" class="v">300,000</span></div>
-          <div><span class="k">Texture Atlas:</span> <span class="v">4096 x 4096 px</span></div>
+          <div><span class="k">Active Mesh:</span> <span id="tele-mesh-name" class="v highlight">Original Master 4K (Uncompressed)</span></div>
+          <div><span class="k">Polygons:</span> <span id="tele-faces" class="v">2,917,998</span></div>
+          <div><span class="k">Texture Atlas:</span> <span id="tele-atlas" class="v">4096 x 4096 px</span></div>
           <div><span class="k">FPS:</span> <span id="tele-fps" class="v highlight">60 FPS</span></div>
         </div>
       </div>
@@ -242,16 +246,17 @@
     <main id="canvas-container">
       <div id="loading-overlay" class="loading-overlay">
         <div class="spinner"></div>
-        <div id="loading-text">Streaming High-Fidelity Amb Temple Digital Twin...</div>
-        <div class="loading-sub" id="loading-sub">Loading PBR Sandstone 4K Texture Atlas...</div>
+        <div id="loading-text">Streaming Original Uncompressed Amb Temple Digital Twin...</div>
+        <div class="loading-sub" id="loading-sub">Downloading 2.92M Photogrammetric Faces & 4K Texture Atlas...</div>
       </div>
 
       <!-- Interactive 3D Canvas HUD Overlay -->
       <div class="canvas-hud">
+        <div class="hud-item author-tag">Lead: <strong>Abubakar Siddique</strong></div>
         <div class="hud-item">Left Click: <strong>Rotate 3D</strong></div>
         <div class="hud-item">Right Click: <strong>Pan</strong></div>
         <div class="hud-item">Scroll Wheel: <strong>Zoom</strong></div>
-        <div class="hud-item mode-tag" id="hud-active-mode">Mode: Realistic 3D Model</div>
+        <div class="hud-item mode-tag" id="hud-active-mode">Mode: Original Master 3D Model</div>
       </div>
 
       <!-- Damage Inspection Card Overlay (Shown when defect pin is clicked) -->
@@ -308,11 +313,12 @@
         </div>
 
         <div class="meta-section">
-          <h4>Project Team & Academic Supervision</h4>
-          <p class="small-text"><strong>Final Year Project:</strong> Virsa3D — AI-Assisted Cultural Heritage Preservation</p>
+          <h4>Project Lead & Academic Supervision</h4>
+          <p class="small-text"><strong>Lead Researcher & Developer:</strong> Abubakar Siddique (Roll No: 23F-3003)</p>
+          <p class="small-text"><strong>Research Co-Authors:</strong> Mubashra Afzal, Zia Ur Rehman</p>
+          <p class="small-text"><strong>Academic Supervisor:</strong> Mr. Umar Iqbal</p>
           <p class="small-text"><strong>Institution:</strong> FAST-NUCES, Chiniot-Faisalabad Campus</p>
-          <p class="small-text"><strong>Authors:</strong> Abubakar Siddique, Mubashra Afzal, Zia Ur Rehman</p>
-          <p class="small-text"><strong>Supervisor:</strong> Mr. Umar Iqbal</p>
+          <p class="small-text"><strong>Final Year Project:</strong> Virsa3D — AI-Assisted Cultural Heritage Digital Twin & Conservation</p>
         </div>
       </div>
     </aside>

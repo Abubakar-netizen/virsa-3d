@@ -11,7 +11,7 @@ let currentMeshGroup = new THREE.Group();
 let defectPinsGroup = new THREE.Group();
 let currentActiveTab = "dev";
 let currentTextureMode = "texture"; // "texture", "clay", "wireframe"
-let currentLod = "fast"; // "fast" (300k faces) or "master" (2.92M faces)
+let currentLod = "master"; // "master" (Original 2.92M faces) or "fast" (300k faces)
 let activeModelMesh = null;
 let currentPointsMesh = null;
 let autoRotate = false;
@@ -62,7 +62,7 @@ const CAMERA_PRESETS = {
 window.addEventListener("DOMContentLoaded", () => {
   initThree();
   loadDefectsData();
-  loadDevelopmentModel("fast");
+  loadDevelopmentModel("master");
   window.addEventListener("resize", onWindowResize);
 });
 
@@ -224,14 +224,23 @@ function switchActiveTab(tabName) {
 // =========================================================================
 // 1. DEVELOPMENT TWIN: LOAD AUTHENTIC TEXTURED 3D TEMPLE MODEL
 // =========================================================================
-function loadDevelopmentModel(lodType = "fast") {
+function loadDevelopmentModel(lodType = "master") {
   currentLod = lodType;
-  showLoading(true, "Loading High-Fidelity Amb Temple Digital Twin...", "Applying 4K Sandstone Texture & Photogrammetric Geometry...");
+  const isMaster = lodType === "master";
+  showLoading(
+    true,
+    isMaster ? "Loading Original Master 3D Twin (2,917,998 Faces)..." : "Loading 60 FPS Web Twin (300k Faces)...",
+    "Streaming 4K Sandstone Texture & Photogrammetric Geometry..."
+  );
+
+  const modelUrl = isMaster
+    ? "static/amb_temple_textured_model.glb"
+    : "static/amb_temple_web.glb";
 
   const loader = new THREE.GLTFLoader();
 
   loader.load(
-    "static/amb_temple_web.glb",
+    modelUrl,
     function (gltf) {
       // Clear previous models in group
       while (currentMeshGroup.children.length > 0) {
@@ -272,7 +281,7 @@ function loadDevelopmentModel(lodType = "fast") {
 
           // Enhance material quality for realistic sandstone look
           if (child.material) {
-            child.material.roughness = currentLod === "master" ? 0.78 : 0.82;
+            child.material.roughness = isMaster ? 0.78 : 0.82;
             child.material.metalness = 0.04;
             if (child.material.map) {
               child.material.map.encoding = THREE.sRGBEncoding;
@@ -287,17 +296,26 @@ function loadDevelopmentModel(lodType = "fast") {
 
       applyLodVisuals(currentLod);
       showLoading(false);
-      console.log(`Loaded 3D digital twin (${currentLod}) successfully.`);
+      console.log(`Loaded ${currentLod} 3D digital twin (${Math.round(totalFaces).toLocaleString()} faces) successfully.`);
     },
     function (xhr) {
-      if (xhr.lengthComputable) {
+      if (xhr.lengthComputable && xhr.total > 0) {
         const pct = Math.round((xhr.loaded / xhr.total) * 100);
-        document.getElementById("loading-sub").innerText = `Downloading 3D geometry & 4K texture atlas: ${pct}%`;
+        const mbLoaded = (xhr.loaded / (1024 * 1024)).toFixed(1);
+        const mbTotal = (xhr.total / (1024 * 1024)).toFixed(1);
+        const subMsg = isMaster
+          ? `Streaming Original Uncompressed 2.92M Mesh: ${pct}% (${mbLoaded} / ${mbTotal} MB)`
+          : `Downloading 3D geometry & texture: ${pct}% (${mbLoaded} / ${mbTotal} MB)`;
+        document.getElementById("loading-sub").innerText = subMsg;
       }
     },
     function (error) {
-      console.error("GLTF load failed:", error);
-      showLoading(false);
+      console.error("GLTF load failed, falling back to Web Twin:", error);
+      if (lodType === "master") {
+        loadDevelopmentModel("fast");
+      } else {
+        showLoading(false);
+      }
     }
   );
 }
@@ -317,9 +335,9 @@ function applyLodVisuals(lod) {
   const teleFaces = document.getElementById("tele-faces");
   const teleAtlas = document.getElementById("tele-atlas");
 
-  if (teleName) teleName.innerText = isMaster ? "Master 4K Mesh" : "Web 4K Twin";
+  if (teleName) teleName.innerText = isMaster ? "Original Master 4K (Uncompressed)" : "Web 4K Twin (300k)";
   if (teleFaces) teleFaces.innerText = isMaster ? "2,917,998" : "300,000";
-  if (teleAtlas) teleAtlas.innerText = isMaster ? "4096 x 4096 px (16x Anisotropic)" : "4096 x 4096 px";
+  if (teleAtlas) teleAtlas.innerText = isMaster ? "4096 x 4096 px (Authentic Sandstone)" : "4096 x 4096 px";
 
   // Dynamic PBR refinement based on active LOD
   if (activeModelMesh) {
@@ -360,13 +378,7 @@ function setTextureMode(mode) {
 
 function switchLod(lod) {
   if (lod === currentLod) return;
-  if (activeModelMesh) {
-    // Instantaneous, zero-lag LOD transition without network re-download or WASM memory crash
-    applyLodVisuals(lod);
-    console.log(`Switched to ${lod === "master" ? "Ultra-Dense Master Digital Twin (2,917,998 faces)" : "Web Twin (300,000 faces)"}`);
-  } else {
-    loadDevelopmentModel(lod);
-  }
+  loadDevelopmentModel(lod);
 }
 
 function changeLightingProfile(profile) {
@@ -783,21 +795,10 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-let loadingTimer = null;
 function showLoading(show, title = "", sub = "") {
   const overlay = document.getElementById("loading-overlay");
   if (!overlay) return;
-  if (loadingTimer) {
-    clearTimeout(loadingTimer);
-    loadingTimer = null;
-  }
   overlay.style.display = show ? "flex" : "none";
   if (title) document.getElementById("loading-text").innerText = title;
   if (sub) document.getElementById("loading-sub").innerText = sub;
-  if (show) {
-    // Safety timeout: automatically dismiss overlay after 3 seconds to guarantee UI responsiveness
-    loadingTimer = setTimeout(() => {
-      overlay.style.display = "none";
-    }, 3000);
-  }
 }
