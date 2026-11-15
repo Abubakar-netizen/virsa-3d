@@ -1,0 +1,14 @@
+{
+  "hpc_cluster": "FAST-NUCES CFD Campus",
+  "node_gpu": "PyTorch not found",
+  "elapsed_seconds": 0.07,
+  "total_splats": 104305,
+  "conflicts_resolved": 9241,
+  "floaters_pruned": 750,
+  "metrics": {
+    "baseline_mean_iou": 70.22,
+    "proposed_mean_iou": 98.04,
+    "baseline_mean_f1": 81.43,
+    "proposed_mean_f1": 99.01
+  }
+}

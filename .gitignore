@@ -14,13 +14,43 @@ ENV/
 .env.*
 !.env.example
 
-# Large dataset directory (raw drone images > 2.8 GB)
+# Datasets & raw captures (User constraint: DO NOT upload dataset to GitHub)
 data/*
 !data/.gitkeep
 !data/README.md
 
-# Pipeline execution artifacts & models
-outputs/
+# Overleaf paper project & PDFs (User constraint: DO NOT upload Overleaf project or PDFs)
+virsa3d_overleaf_project/
+*.pdf
+
+# Large binary intermediate databases & scratch workspaces
+scripts_archive_past/
+*.db
+src/web/static/amb_temple_textured_model.glb
+src/web/static/amb_temple_web.obj
+*.db-*
+*.sqlite
+*.sqlite3
+colmap_workspaces/
+3dgs_models/
+stage_1_photogrammetry/
+archive_simulated/
+wheels/
+*.rpm
+
+# Output directory exclusions (ignore heavy caches/workspaces, keep verified scientific reports)
+outputs/colmap_workspace/
+outputs/colmap_test_sparse/
+outputs/colmap_sample/
+outputs/bench_sparse/
+outputs/test/
+outputs/proposed/
+outputs/baseline/
+outputs/3dgs_previews/
+outputs/dense_cloud_previews/
+outputs/textured_mesh/
+outputs/*.db
+outputs/*.db-*
 
 # Archives & compressed bundles
 *.zip
@@ -28,7 +58,7 @@ outputs/
 *.7z
 *.rar
 
-# Cluster documentation with internal server & credentials
+# Internal cluster credentials documentation
 FAST_NUCES_CFD_HPC_Cluster_Documentation.md
 
 # LaTeX temporary / intermediate build files

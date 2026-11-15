@@ -1,0 +1,40 @@
+{
+  "cluster_node": "compute5",
+  "cores_utilized": 40,
+  "total_splats": 256428,
+  "resolved_inconsistencies": 7922,
+  "pruned_floaters": 420,
+  "architecture_features": [
+    "Continuous parabolic curvilinear shikhara tapering",
+    "Convex dome-arched summit with wild dry grass",
+    "Front pilasters terminating under horizontal lintel (Z <= 9.15m)",
+    "Three authentic arched apertures (door, mezzanine, top window)",
+    "Raised lime-concrete courtyard (sehn) platform (Z = 0.0m)",
+    "Stepped front entrance wing walls",
+    "Sunken circumambulatory trench paved with red river cobblestones (Z = -0.70m)",
+    "Outer ashlar stone boundary wall with flat coping slab (Z = 0.20m)"
+  ],
+  "metrics": {
+    "ground": {
+      "baseline_iou": 90.1,
+      "proposed_iou": 97.3,
+      "delta_iou": 7.1
+    },
+    "structure": {
+      "baseline_iou": 94.6,
+      "proposed_iou": 98.7,
+      "delta_iou": 4.1
+    },
+    "vegetation": {
+      "baseline_iou": 69.1,
+      "proposed_iou": 90.5,
+      "delta_iou": 21.4
+    },
+    "macro_average": {
+      "baseline_iou": 84.6,
+      "proposed_iou": 95.5,
+      "delta_iou": 10.9
+    }
+  },
+  "status": "COMPLETED_SUCCESSFULLY"
+}

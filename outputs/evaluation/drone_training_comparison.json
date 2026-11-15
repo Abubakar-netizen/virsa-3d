@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-09 23:59:33",
+  "dataset": "72 DJI Drone Images (FC8482)",
+  "method": "Direct Drone Feature Matching & Multi-View Consistency",
+  "baseline_macro_iou": 61.91,
+  "proposed_macro_iou": 80.29,
+  "delta_macro_iou": 18.38,
+  "structure_iou_gain": 9.78,
+  "resolved_conflicts": 2878,
+  "pruned_floaters": 320,
+  "files": {
+    "baseline_ply": "outputs/baseline/raw_trained_drone_baseline.ply",
+    "proposed_ply": "outputs/proposed/raw_trained_drone_proposed.ply"
+  }
+}

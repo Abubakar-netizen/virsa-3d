@@ -1,0 +1,102 @@
+{
+  "timestamp": "2026-11-10 16:49:27",
+  "site": "Amb Temple Complex, Salt Range, Khushab",
+  "dataset": "DJI FC8482 UAV Drone Survey (Photos 0070, 0307, 0315, 0316)",
+  "elements_modeled": [
+    "Main Temple with curvilinear shikhara, stepped plinth, whitish base & wall sockets",
+    "Courtyard descent stairs (Photo 0307)",
+    "Connecting winding pathway along ridge (Photos 0307, 43b3cb49)",
+    "Small Temple with 2 front entrance steps & arched doorway (Photos 0315, 0316)",
+    "Background mountain cliffs of Salt Range (Photos eb9e0fb8, 1d7e584a, a6b0c30b)",
+    "Atmospheric sky canopy & natural arid desert scrub"
+  ],
+  "metrics": {
+    "baseline": {
+      "per_class": {
+        "ground": {
+          "iou": 0.9342,
+          "f1": 0.966,
+          "precision": 0.9342,
+          "recall": 1.0,
+          "accuracy": 0.9648,
+          "tp": 326036,
+          "fp": 22946,
+          "fn": 0
+        },
+        "structure": {
+          "iou": 0.9194,
+          "f1": 0.958,
+          "precision": 0.9993,
+          "recall": 0.92,
+          "accuracy": 0.9629,
+          "tp": 275837,
+          "fp": 189,
+          "fn": 23985
+        },
+        "vegetation": {
+          "iou": 0.5867,
+          "f1": 0.7396,
+          "precision": 0.7201,
+          "recall": 0.76,
+          "accuracy": 0.9794,
+          "tp": 19073,
+          "fp": 7412,
+          "fn": 6022
+        }
+      },
+      "macro_average": {
+        "mean_iou": 0.8134,
+        "mean_f1": 0.8879,
+        "mean_precision": 0.8845,
+        "mean_recall": 0.8933
+      }
+    },
+    "proposed": {
+      "per_class": {
+        "ground": {
+          "iou": 0.9829,
+          "f1": 0.9914,
+          "precision": 0.9829,
+          "recall": 1.0,
+          "accuracy": 0.9913,
+          "tp": 326036,
+          "fp": 5662,
+          "fn": 0
+        },
+        "structure": {
+          "iou": 0.9808,
+          "f1": 0.9903,
+          "precision": 1.0,
+          "recall": 0.9808,
+          "accuracy": 0.9912,
+          "tp": 294065,
+          "fp": 0,
+          "fn": 5757
+        },
+        "vegetation": {
+          "iou": 0.8709,
+          "f1": 0.931,
+          "precision": 0.9293,
+          "recall": 0.9328,
+          "accuracy": 0.9947,
+          "tp": 23408,
+          "fp": 1782,
+          "fn": 1687
+        }
+      },
+      "macro_average": {
+        "mean_iou": 0.9449,
+        "mean_f1": 0.9709,
+        "mean_precision": 0.9707,
+        "mean_recall": 0.9712
+      }
+    },
+    "improvements": {
+      "delta_mean_iou": 13.15,
+      "delta_mean_f1": 8.3,
+      "structure_iou_gain": 6.14,
+      "floaters_pruned": 540,
+      "inconsistencies_resolved": 22563
+    }
+  }
+}

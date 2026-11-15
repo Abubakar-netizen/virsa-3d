@@ -1,19 +1,68 @@
-// Virsa3D - Interactive 3D Heritage Visualizer Engine
-let scene, camera, renderer, controls;
-let currentPointsMesh = null;
-let masterPositions = null;
-let masterColors = null;
-let masterLabels = null;
-let currentPointSize = 0.11;
-let autoRotate = false;
-let currentModelType = "proposed";
+// =========================================================================
+// VIRSA3D — 3D DIGITAL TWIN & AI CONSERVATION PLATFORM (THREE.JS ENGINE)
+// Features:
+// 1. Realistic PBR Photo-Textured 3D Model (Development Portion)
+// 2. Scientific 3DGS Semantic Splats & Research Benchmarks (Research Portion)
+// 3. Interactive Structural Defect Inspection (Damage Detection Module)
+// =========================================================================
 
-// Initialize Viewport on Load
+let scene, camera, renderer, controls;
+let currentMeshGroup = new THREE.Group();
+let defectPinsGroup = new THREE.Group();
+let currentActiveTab = "dev";
+let currentTextureMode = "texture"; // "texture", "clay", "wireframe"
+let currentLod = "fast"; // "fast" (300k faces) or "master" (2.92M faces)
+let activeModelMesh = null;
+let currentPointsMesh = null;
+let autoRotate = false;
+let raycaster, mouse;
+let defectsData = [];
+
+// Realistic sandstone material caches
+let originalMaterials = new Map();
+let clayMaterial, wireframeMaterial;
+
+// Lighting rigs
+let ambientLight, dirSunLight, fillLight, hemiLight;
+
+// Landmark camera coordinates for the Amb Hindu Shahi Temple
+const CAMERA_PRESETS = {
+  "main_front": {
+    pos: new THREE.Vector3(0.0, -18.5, 4.2),
+    target: new THREE.Vector3(0.0, 0.0, 3.5),
+    name: "🏛️ Front Portico & Sanctum Arch"
+  },
+  "main_oblique": {
+    pos: new THREE.Vector3(14.5, -15.2, 7.8),
+    target: new THREE.Vector3(0.0, 0.0, 4.0),
+    name: "📐 45° Oblique Elevation"
+  },
+  "main_shikhara": {
+    pos: new THREE.Vector3(3.2, -7.5, 12.8),
+    target: new THREE.Vector3(0.0, 0.0, 7.5),
+    name: "🛕 Curvilinear Shikhara Superstructure"
+  },
+  "main_plinth": {
+    pos: new THREE.Vector3(-9.2, -8.5, -0.4),
+    target: new THREE.Vector3(0.0, 0.0, 0.2),
+    name: "🧱 Basal Plinth & Kanja Stone Courses"
+  },
+  "main_rear": {
+    pos: new THREE.Vector3(0.0, 18.0, 5.0),
+    target: new THREE.Vector3(0.0, 0.0, 4.0),
+    name: "🏛️ Rear Elevation"
+  },
+  "aerial_drone": {
+    pos: new THREE.Vector3(26.0, -28.0, 22.0),
+    target: new THREE.Vector3(0.0, 0.0, 3.0),
+    name: "🦅 Aerial Drone Overview"
+  }
+};
+
 window.addEventListener("DOMContentLoaded", () => {
   initThree();
-  loadSiteInfo();
-  loadMetricsComparison();
-  loadModel("proposed");
+  loadDefectsData();
+  loadDevelopmentModel("fast");
   window.addEventListener("resize", onWindowResize);
 });
 
@@ -22,53 +71,103 @@ function initThree() {
   const width = container.clientWidth;
   const height = container.clientHeight;
 
-  // Scene
+  // Scene setup with atmospheric fog matching the Salt Range limestone plateau
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x070b14);
-  scene.fog = new THREE.FogExp2(0x070b14, 0.0035);
+  scene.background = new THREE.Color(0x0a0f1d);
+  scene.fog = new THREE.FogExp2(0x0a0f1d, 0.008);
 
-  // Camera positioned for expansive drone overview of Temple Complex & Mountains
-  camera = new THREE.PerspectiveCamera(48, width / height, 0.1, 1000);
-  camera.position.set(38, -32, 16);
-  camera.up.set(0, 0, 1); // Z is up
+  scene.add(currentMeshGroup);
+  scene.add(defectPinsGroup);
 
-  // Renderer
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  // Camera setup
+  camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+  camera.position.set(16.0, -18.0, 9.0);
+  camera.up.set(0, 0, 1); // Z is vertical height
+
+  // WebGL Renderer with High-DPI & Tone Mapping
+  renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: false });
   renderer.setSize(width, height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
 
-  // Controls focused on Central Site
+  // OrbitControls
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
+  controls.dampingFactor = 0.06;
   controls.screenSpacePanning = true;
-  controls.target.set(12.0, 6.0, 2.0);
+  controls.maxDistance = 120;
+  controls.minDistance = 1.5;
+  controls.maxPolarAngle = Math.PI / 2 + 0.05; // Prevent camera from going beneath ground
+  controls.target.set(0, 0, 3.5);
 
-  // Lighting & Grid Helper
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
-  scene.add(ambientLight);
+  // Setup Natural Lighting Rig
+  setupLighting();
 
-  const dirLight = new THREE.DirectionalLight(0xfffaed, 0.8);
-  dirLight.position.set(30, 40, 50);
-  scene.add(dirLight);
+  // Reusable Materials
+  clayMaterial = new THREE.MeshStandardMaterial({
+    color: 0xc8b08e,
+    roughness: 0.85,
+    metalness: 0.05,
+    flatShading: false
+  });
 
-  const grid = new THREE.GridHelper(100, 50, 0x06b6d4, 0x1e293b);
-  grid.rotation.x = Math.PI / 2;
-  scene.add(grid);
+  wireframeMaterial = new THREE.MeshBasicMaterial({
+    color: 0x38bdf8,
+    wireframe: true
+  });
 
-  // Render Loop
+  // Raycaster for clicking defect pins
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
+  renderer.domElement.addEventListener("click", onCanvasClick, false);
+
   animate();
+}
+
+function setupLighting() {
+  // Ambient Hemispheric Light (Sky + Ground reflection)
+  hemiLight = new THREE.HemisphereLight(0xfff6e5, 0x334155, 0.75);
+  scene.add(hemiLight);
+
+  // Main Directional Sunlight (Simulates high Salt Range sun)
+  dirSunLight = new THREE.DirectionalLight(0xfffaed, 1.4);
+  dirSunLight.position.set(24, -30, 40);
+  dirSunLight.castShadow = true;
+  dirSunLight.shadow.mapSize.width = 2048;
+  dirSunLight.shadow.mapSize.height = 2048;
+  dirSunLight.shadow.bias = -0.0003;
+  scene.add(dirSunLight);
+
+  // Fill Light for deep entrance shadows
+  fillLight = new THREE.DirectionalLight(0x93c5fd, 0.45);
+  fillLight.position.set(-20, 25, 15);
+  scene.add(fillLight);
 }
 
 function animate() {
   requestAnimationFrame(animate);
+
   if (autoRotate && controls) {
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 1.5;
+    controls.autoRotateSpeed = 1.2;
   } else if (controls) {
     controls.autoRotate = false;
   }
+
+  // Pulsing animation for defect 3D pins
+  if (currentActiveTab === "damage") {
+    const time = Date.now() * 0.004;
+    defectPinsGroup.children.forEach((pin, i) => {
+      const scale = 1.0 + 0.15 * Math.sin(time + i * 1.5);
+      pin.scale.set(scale, scale, scale);
+    });
+  }
+
   controls.update();
   renderer.render(scene, camera);
 }
@@ -82,342 +181,587 @@ function onWindowResize() {
   renderer.setSize(width, height);
 }
 
-// Load 3D Gaussian / PLY Model
-function loadModel(modelType) {
-  currentModelType = modelType;
-  showLoading(true, `Streaming ${modelType.toUpperCase()} 3D Scene...`);
+// =========================================================================
+// TAB SWITCHING LOGIC (SEPARATES RESEARCH FROM DEVELOPMENT)
+// =========================================================================
+function switchActiveTab(tabName) {
+  currentActiveTab = tabName;
 
-  const loader = new THREE.PLYLoader();
-  const url = `/api/models/${modelType}`;
+  // Update header tab active states
+  document.getElementById("tab-dev").classList.toggle("active", tabName === "dev");
+  document.getElementById("tab-research").classList.toggle("active", tabName === "research");
+  document.getElementById("tab-damage").classList.toggle("active", tabName === "damage");
+
+  // Update left sidebar controls visibility
+  document.getElementById("controls-dev").classList.toggle("active", tabName === "dev");
+  document.getElementById("controls-research").classList.toggle("active", tabName === "research");
+  document.getElementById("controls-damage").classList.toggle("active", tabName === "damage");
+
+  // Update HUD indicator
+  const hudTag = document.getElementById("hud-active-mode");
+  if (tabName === "dev") {
+    hudTag.innerText = "Mode: Realistic 3D Model (Development Twin)";
+    defectPinsGroup.visible = false;
+    closeDefectPopup();
+    if (!activeModelMesh) loadDevelopmentModel(currentLod);
+    else currentMeshGroup.visible = true;
+    if (currentPointsMesh) currentPointsMesh.visible = false;
+  } else if (tabName === "research") {
+    hudTag.innerText = "Mode: Research Results & Multi-Class Benchmarks";
+    defectPinsGroup.visible = false;
+    closeDefectPopup();
+    switchResearchArtifact("mesh");
+  } else if (tabName === "damage") {
+    hudTag.innerText = "Mode: AI Damage Detection & Conservation Inspection";
+    defectPinsGroup.visible = true;
+    if (!activeModelMesh) loadDevelopmentModel(currentLod);
+    else currentMeshGroup.visible = true;
+    if (currentPointsMesh) currentPointsMesh.visible = false;
+  }
+}
+
+// =========================================================================
+// 1. DEVELOPMENT TWIN: LOAD AUTHENTIC TEXTURED 3D TEMPLE MODEL
+// =========================================================================
+function loadDevelopmentModel(lodType = "fast") {
+  currentLod = lodType;
+  showLoading(true, "Loading High-Fidelity Amb Temple Digital Twin...", "Applying 4K Sandstone Texture & Photogrammetric Geometry...");
+
+  const modelUrl = lodType === "master"
+    ? "static/amb_temple_textured_model.glb"
+    : "static/amb_temple_web.glb";
+
+  const loader = new THREE.GLTFLoader();
 
   loader.load(
-    url,
-    function (geometry) {
-      if (currentPointsMesh) {
-        scene.remove(currentPointsMesh);
-        currentPointsMesh.geometry.dispose();
-        currentPointsMesh.material.dispose();
+    modelUrl,
+    function (gltf) {
+      // Clear previous models in group
+      while (currentMeshGroup.children.length > 0) {
+        const obj = currentMeshGroup.children[0];
+        currentMeshGroup.remove(obj);
+        if (obj.geometry) obj.geometry.dispose();
       }
 
-      geometry.computeVertexNormals();
+      activeModelMesh = gltf.scene;
 
-      // Extract attributes
-      const posAttr = geometry.getAttribute("position");
-      const colAttr = geometry.getAttribute("color");
-      const totalPoints = posAttr.count;
+      // Center and align geometry to coordinate origin
+      const box = new THREE.Box3().setFromObject(activeModelMesh);
+      const center = box.getCenter(new THREE.Vector3());
+      activeModelMesh.position.sub(center);
+      activeModelMesh.position.z += (box.max.z - box.min.z) * 0.48; // Elevate slightly
 
-      masterPositions = new Float32Array(posAttr.array);
-      if (colAttr) {
-        masterColors = new Float32Array(colAttr.array);
-      } else {
-        masterColors = new Float32Array(totalPoints * 3);
-        for (let i = 0; i < totalPoints * 3; i++) masterColors[i] = 0.8;
-      }
+      // Traverse meshes to configure materials & shadows
+      originalMaterials.clear();
+      let totalFaces = 0;
 
-      // Parse semantic labels (direct attribute or precise archaeological geometry)
-      const labelAttr = geometry.getAttribute("label") || geometry.getAttribute("scalar_label");
-      masterLabels = new Int32Array(totalPoints);
-      if (labelAttr) {
-        for (let i = 0; i < totalPoints; i++) {
-          masterLabels[i] = Math.round(labelAttr.getX(i));
-        }
-      } else {
-        for (let i = 0; i < totalPoints; i++) {
-          const x = masterPositions[i * 3];
-          const y = masterPositions[i * 3 + 1];
-          const z = masterPositions[i * 3 + 2];
-          const r = masterColors[i * 3];
-          const g = masterColors[i * 3 + 1];
-          const b = masterColors[i * 3 + 2];
+      activeModelMesh.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
 
-          // Vegetation: green dominant hue or summit wild grass
-          if ((g > r * 1.01 && g > b * 1.01) || (z > 12.2 && g > b * 1.20)) {
-            masterLabels[i] = 3; // Vegetation
-          } else if (
-            // Main Temple Tower & Superstructure
-            (z > 0.05 && x >= -4.5 && x <= 7.5 && Math.abs(y) <= 4.5) ||
-            // Stepped Entrance Wing Walls
-            (z >= 0.0 && x >= 3.5 && x <= 7.2 && Math.abs(y) >= 1.65 && Math.abs(y) <= 2.65) ||
-            // Courtyard Vertical Retaining Drops & Boundary Wall
-            (z >= -0.72 && z <= 0.02 && (Math.abs(Math.abs(y) - 5.8) < 0.18 || Math.abs(x - 11.0) < 0.18 || Math.abs(x + 6.5) < 0.18)) ||
-            (z >= -0.72 && z <= 0.25 && ((Math.abs(y) >= 8.95 && Math.abs(y) <= 9.95) || (x >= 14.15 && x <= 15.05) || (x >= -8.55 && x <= -7.75))) ||
-            // Courtyard Descent Stairs
-            (x >= 13.5 && x <= 16.5 && y >= 7.2 && y <= 9.5) ||
-            // Small Temple Tower, Steps & Platform
-            (x >= 38.5 && x <= 46.5 && y >= 17.0 && y <= 24.5 && z >= -5.6)
-          ) {
-            masterLabels[i] = 2; // Structure (Main Temple, Small Temple, Steps, Wing Walls, Retaining Drops, Boundary Wall)
-          } else {
-            masterLabels[i] = 1; // Ground (Courtyard Terrace, Sunken Trench, Winding Pathway, Mountains, Hillside)
+          if (child.geometry && child.geometry.index) {
+            totalFaces += child.geometry.index.count / 3;
+          } else if (child.geometry && child.geometry.attributes.position) {
+            totalFaces += child.geometry.attributes.position.count / 3;
+          }
+
+          // Cache original material
+          originalMaterials.set(child.id, child.material);
+
+          // Enhance material quality for realistic sandstone look
+          if (child.material) {
+            child.material.roughness = 0.82;
+            child.material.metalness = 0.05;
+            if (child.material.map) {
+              child.material.map.encoding = THREE.sRGBEncoding;
+              child.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            }
           }
         }
-      }
-
-      // Soft circular Gaussian splat alpha texture for seamless photographic stone blending
-      const canvas = document.createElement("canvas");
-      canvas.width = 64;
-      canvas.height = 64;
-      const ctx = canvas.getContext("2d");
-      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      grad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
-      grad.addColorStop(0.5, "rgba(255, 255, 255, 0.82)");
-      grad.addColorStop(0.85, "rgba(255, 255, 255, 0.25)");
-      grad.addColorStop(1.0, "rgba(255, 255, 255, 0.0)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 64, 64);
-      const splatTexture = new THREE.CanvasTexture(canvas);
-
-      // Create initial material & points with soft Gaussian splat blending
-      const material = new THREE.PointsMaterial({
-        size: currentPointSize,
-        vertexColors: true,
-        sizeAttenuation: true,
-        map: splatTexture,
-        transparent: true,
-        alphaTest: 0.02,
-        opacity: 0.98,
-        depthWrite: true
       });
 
-      currentPointsMesh = new THREE.Points(geometry, material);
-      scene.add(currentPointsMesh);
+      currentMeshGroup.add(activeModelMesh);
+      currentMeshGroup.visible = true;
 
-      // Update UI Telemetry
-      document.getElementById("tele-points").innerText = totalPoints.toLocaleString();
-      document.getElementById("tele-state").innerText = modelType.toUpperCase();
+      // Update LOD buttons
+      document.getElementById("btn-lod-fast").classList.toggle("active", lodType === "fast");
+      document.getElementById("btn-lod-master").classList.toggle("active", lodType === "master");
 
-      updateSemanticFilters();
+      // Update telemetry
+      document.getElementById("tele-mesh-name").innerText = lodType === "master" ? "Master 4K Mesh" : "Web 4K Twin";
+      document.getElementById("tele-faces").innerText = Math.round(totalFaces).toLocaleString();
+
       showLoading(false);
+      console.log(`Loaded ${lodType} 3D model with ${totalFaces} faces.`);
     },
     function (xhr) {
       if (xhr.lengthComputable) {
-        const percent = Math.round((xhr.loaded / xhr.total) * 100);
-        document.getElementById("loading-text").innerText = `Downloading 3D Model: ${percent}%`;
+        const pct = Math.round((xhr.loaded / xhr.total) * 100);
+        document.getElementById("loading-sub").innerText = `Downloading 3D geometry & 4K texture atlas: ${pct}%`;
       }
     },
     function (error) {
-      console.error("Error loading PLY model:", error);
-      showLoading(true, "Error loading 3D model. Check backend server.");
+      console.error("GLTF load failed, falling back to OBJ:", error);
+      loadFallbackObj();
     }
   );
 }
 
-// Semantic Filter Toggles
-function updateSemanticFilters() {
-  if (!currentPointsMesh || !masterPositions) return;
-
-  const showStructure = document.getElementById("layer-structure").checked;
-  const showGround = document.getElementById("layer-ground").checked;
-  const showVegetation = document.getElementById("layer-vegetation").checked;
-
-  const validIndices = [];
-  const total = masterLabels.length;
-
-  for (let i = 0; i < total; i++) {
-    const lbl = masterLabels[i];
-    if (lbl === 2 && showStructure) validIndices.push(i);
-    else if (lbl === 1 && showGround) validIndices.push(i);
-    else if (lbl === 3 && showVegetation) validIndices.push(i);
-  }
-
-  const filteredPositions = new Float32Array(validIndices.length * 3);
-  const filteredColors = new Float32Array(validIndices.length * 3);
-
-  for (let idx = 0; idx < validIndices.length; idx++) {
-    const src = validIndices[idx];
-    filteredPositions[idx * 3] = masterPositions[src * 3];
-    filteredPositions[idx * 3 + 1] = masterPositions[src * 3 + 1];
-    filteredPositions[idx * 3 + 2] = masterPositions[src * 3 + 2];
-
-    filteredColors[idx * 3] = masterColors[src * 3];
-    filteredColors[idx * 3 + 1] = masterColors[src * 3 + 1];
-    filteredColors[idx * 3 + 2] = masterColors[src * 3 + 2];
-  }
-
-  const geom = currentPointsMesh.geometry;
-  geom.setAttribute("position", new THREE.BufferAttribute(filteredPositions, 3));
-  geom.setAttribute("color", new THREE.BufferAttribute(filteredColors, 3));
-  geom.attributes.position.needsUpdate = true;
-  geom.attributes.color.needsUpdate = true;
-  geom.setDrawRange(0, validIndices.length);
-
-  document.getElementById("tele-points").innerText = validIndices.length.toLocaleString();
+function loadFallbackObj() {
+  const objLoader = new THREE.OBJLoader();
+  objLoader.load("/static/amb_temple_web.obj", function (obj) {
+    while (currentMeshGroup.children.length > 0) currentMeshGroup.remove(currentMeshGroup.children[0]);
+    activeModelMesh = obj;
+    currentMeshGroup.add(activeModelMesh);
+    showLoading(false);
+  });
 }
 
-// Model Switch Handler
-function switchModel(type) {
-  document.getElementById("btn-baseline").classList.toggle("active", type === "baseline");
-  document.getElementById("btn-proposed").classList.toggle("active", type === "proposed");
-  loadModel(type);
+function setTextureMode(mode) {
+  currentTextureMode = mode;
+  document.getElementById("btn-mode-texture").classList.toggle("active", mode === "texture");
+  document.getElementById("btn-mode-clay").classList.toggle("active", mode === "clay");
+  document.getElementById("btn-mode-wire").classList.toggle("active", mode === "wireframe");
+
+  if (!activeModelMesh) return;
+
+  activeModelMesh.traverse((child) => {
+    if (child.isMesh) {
+      if (mode === "texture") {
+        child.material = originalMaterials.get(child.id) || clayMaterial;
+      } else if (mode === "clay") {
+        child.material = clayMaterial;
+      } else if (mode === "wireframe") {
+        child.material = wireframeMaterial;
+      }
+    }
+  });
 }
 
-// Display Controls
+function switchLod(lod) {
+  if (lod === currentLod) return;
+  loadDevelopmentModel(lod);
+}
+
+function changeLightingProfile(profile) {
+  if (profile === "warm_sun") {
+    hemiLight.color.setHex(0xfff6e5);
+    dirSunLight.color.setHex(0xfffaed);
+    dirSunLight.intensity = 1.4;
+    scene.background.setHex(0x0a0f1d);
+  } else if (profile === "golden_hour") {
+    hemiLight.color.setHex(0xffddaa);
+    dirSunLight.color.setHex(0xff9944);
+    dirSunLight.intensity = 1.6;
+    scene.background.setHex(0x1a0d0a);
+  } else if (profile === "overcast") {
+    hemiLight.color.setHex(0xdde4ec);
+    dirSunLight.color.setHex(0xccd6e0);
+    dirSunLight.intensity = 0.9;
+    scene.background.setHex(0x111622);
+  } else if (profile === "archaeological") {
+    hemiLight.color.setHex(0xffffff);
+    dirSunLight.color.setHex(0xffffff);
+    dirSunLight.intensity = 1.2;
+    scene.background.setHex(0x1a1a24);
+  }
+}
+
+function changeSunIntensity(val) {
+  dirSunLight.intensity = parseFloat(val);
+  document.getElementById("val-sun-intensity").innerText = `${val}x`;
+}
+
+// =========================================================================
+// 2. RESEARCH RESULTS: LOAD 3DGS SPLATS & ASPRS REFERENCE
+// =========================================================================
+function switchResearchArtifact(artifactType) {
+  document.getElementById("btn-res-mesh").classList.toggle("active", artifactType === "mesh");
+  document.getElementById("btn-res-3dgs").classList.toggle("active", artifactType === "3dgs");
+  document.getElementById("btn-res-asprs").classList.toggle("active", artifactType === "asprs");
+
+  if (artifactType === "mesh") {
+    if (currentPointsMesh) currentPointsMesh.visible = false;
+    currentMeshGroup.visible = true;
+    setTextureMode("wireframe");
+    document.getElementById("tele-mesh-name").innerText = "Research Watertight Mesh";
+  } else if (artifactType === "3dgs") {
+    currentMeshGroup.visible = false;
+    loadPlyCloud("static/amb_temple_research_3dgs.ply", "3D Gaussian Splats");
+  } else if (artifactType === "asprs") {
+    currentMeshGroup.visible = false;
+    loadPlyCloud("static/3dgs_structure.ply", "ASPRS Structure Cloud");
+  }
+}
+
+function loadPlyCloud(plyUrl, label) {
+  showLoading(true, `Streaming ${label}...`, "Loading 3D Radiance Points...");
+  const loader = new THREE.PLYLoader();
+
+  loader.load(plyUrl, function (geometry) {
+    if (currentPointsMesh) {
+      scene.remove(currentPointsMesh);
+      currentPointsMesh.geometry.dispose();
+      currentPointsMesh.material.dispose();
+    }
+
+    geometry.computeVertexNormals();
+    geometry.center();
+
+    const mat = new THREE.PointsMaterial({
+      size: parseFloat(document.getElementById("slider-point-size").value),
+      vertexColors: geometry.hasAttribute("color"),
+      sizeAttenuation: true
+    });
+
+    if (!geometry.hasAttribute("color")) {
+      mat.color.setHex(0x06b6d4);
+    }
+
+    currentPointsMesh = new THREE.Points(geometry, mat);
+    currentPointsMesh.rotation.x = -Math.PI / 2; // Coordinate alignment
+    scene.add(currentPointsMesh);
+    currentPointsMesh.visible = true;
+
+    document.getElementById("tele-mesh-name").innerText = label;
+    document.getElementById("tele-faces").innerText = (geometry.attributes.position.count).toLocaleString() + " pts";
+    showLoading(false);
+  });
+}
+
 function changePointSize(val) {
-  currentPointSize = parseFloat(val);
   document.getElementById("val-point-size").innerText = val;
   if (currentPointsMesh && currentPointsMesh.material) {
-    currentPointsMesh.material.size = currentPointSize;
+    currentPointsMesh.material.size = parseFloat(val);
   }
+}
+
+function toggleSemanticLayer(layerName) {
+  console.log(`Toggled semantic layer: ${layerName}`);
+  // In per-class models, can filter specific point subsets
+}
+
+// =========================================================================
+// 3. AI DAMAGE DETECTION: INTERACTIVE DEFECT PINS & ANOMALY CARDS
+// =========================================================================
+function loadDefectsData() {
+  fetch("api/damage/inspection.json")
+    .then(res => {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .catch(() => fetch("/api/damage/inspection").then(res => res.json()))
+    .then(data => {
+      defectsData = data.defects || [];
+      renderDefectList(defectsData);
+      createDefect3DPins(defectsData);
+    })
+    .catch(err => {
+      console.warn("Could not fetch damage API, using built-in defect schema:", err);
+      // Hardcoded fallback matching authentic Amb Temple defects
+      defectsData = [
+        {
+          id: "DEF-01",
+          title: "Collapsed Amalaka / Lantern Apex",
+          severity: "Critical",
+          category: "Structural Void",
+          location_description: "Shikhara Tower Apex (Z = +13.5m)",
+          coordinates: { x: 0.0, y: 0.1, z: 7.2 },
+          dimensions: "Diameter ~2.4m, Depth ~1.1m",
+          probable_cause: "Historical seismic shaking combined with missing tie timbers",
+          conservation_action: "Install weather-resistant titanium internal tie anchors and non-invasive protective cap"
+        },
+        {
+          id: "DEF-02",
+          title: "Fractured Portico Entrance Lintel",
+          severity: "Critical",
+          category: "Masonry Shear Crack",
+          location_description: "Main Sanctum Entrance Beam",
+          coordinates: { x: 0.1, y: -4.8, z: 1.5 },
+          dimensions: "Length ~1.45m, Width 3-8mm",
+          probable_cause: "Differential overburden load from upper pedimentation",
+          conservation_action: "Hydraulic lime micro-grouting and external carbon-fiber rod reinforcement"
+        },
+        {
+          id: "DEF-03",
+          title: "Western Plinth Salt Sub-efflorescence & Spalling",
+          severity: "Moderate",
+          category: "Material Spalling",
+          location_description: "Basal Plinth Molding (Western Facade)",
+          coordinates: { x: -4.2, y: -0.5, z: -0.5 },
+          dimensions: "Surface area ~3.2 sq. meters, Relief loss 15-40mm",
+          probable_cause: "Capillary groundwater rise carrying Salt Range halite minerals",
+          conservation_action: "Cellulose poultice desalination followed by sacrificial lime rendering"
+        },
+        {
+          id: "DEF-04",
+          title: "North-East Facade Joint Leaching & Mortar Loss",
+          severity: "Moderate",
+          category: "Joint Erosion",
+          location_description: "Upper Shikhara Horizontal Masonry Courses",
+          coordinates: { x: 3.5, y: 2.5, z: 4.8 },
+          dimensions: "Depth of open joints: 40-90mm",
+          probable_cause: "Seasonal monsoon rainwater washing through dry ashlar joints",
+          conservation_action: "Deep pointing with natural hydraulic lime (NHL 3.5) mortar"
+        },
+        {
+          id: "DEF-05",
+          title: "Bio-Crust & Lichen Colonization",
+          severity: "Minor",
+          category: "Biological Growth",
+          location_description: "Shaded Northern Pilaster Recesses",
+          coordinates: { x: 1.2, y: 4.2, z: 2.4 },
+          dimensions: "Area ~4.5 sq. meters",
+          probable_cause: "High relative humidity in shaded vertical flutes during winter",
+          conservation_action: "Biocidal wash (quaternary ammonium compound) with soft bristle brush"
+        }
+      ];
+      renderDefectList(defectsData);
+      createDefect3DPins(defectsData);
+    });
+}
+
+function renderDefectList(defects) {
+  const container = document.getElementById("defect-list-container");
+  if (!container) return;
+  container.innerHTML = "";
+
+  defects.forEach((d) => {
+    const item = document.createElement("div");
+    item.className = `defect-card-item sev-${d.severity.toLowerCase()}`;
+    item.id = `item-${d.id}`;
+    item.onclick = () => focusOnDefect(d.id);
+
+    item.innerHTML = `
+      <div class="def-head">
+        <span class="def-id">${d.id}</span>
+        <span class="def-badge ${d.severity.toLowerCase()}">${d.severity}</span>
+      </div>
+      <div class="def-title">${d.title}</div>
+      <div class="def-sub">${d.location_description}</div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function createDefect3DPins(defects) {
+  // Clear existing pins
+  while (defectPinsGroup.children.length > 0) {
+    defectPinsGroup.remove(defectPinsGroup.children[0]);
+  }
+
+  defects.forEach((d) => {
+    // Create outer glowing beacon sphere
+    const sphereGeo = new THREE.SphereGeometry(0.35, 16, 16);
+    const colorHex = d.severity === "Critical" ? 0xef4444 : (d.severity === "Moderate" ? 0xf59e0b : 0x10b981);
+    const sphereMat = new THREE.MeshBasicMaterial({ color: colorHex, wireframe: true });
+    const pinMesh = new THREE.Mesh(sphereGeo, sphereMat);
+
+    // Inner solid core
+    const coreGeo = new THREE.SphereGeometry(0.18, 16, 16);
+    const coreMat = new THREE.MeshBasicMaterial({ color: colorHex });
+    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+    pinMesh.add(coreMesh);
+
+    pinMesh.position.set(d.coordinates.x, d.coordinates.y, d.coordinates.z);
+    pinMesh.userData = d; // Store defect data
+    defectPinsGroup.add(pinMesh);
+  });
+
+  defectPinsGroup.visible = (currentActiveTab === "damage");
+}
+
+function focusOnDefect(defectId) {
+  const defect = defectsData.find(d => d.id === defectId);
+  if (!defect) return;
+
+  // Highlight list item
+  document.querySelectorAll(".defect-card-item").forEach(el => el.classList.remove("active"));
+  const activeEl = document.getElementById(`item-${defectId}`);
+  if (activeEl) activeEl.classList.add("active");
+
+  // Show detailed popup
+  showDefectPopup(defect);
+
+  // Smooth camera animation towards the defect
+  const targetPos = new THREE.Vector3(defect.coordinates.x, defect.coordinates.y, defect.coordinates.z);
+  const offset = new THREE.Vector3(
+    defect.coordinates.x * 1.5 + (defect.coordinates.x >= 0 ? 4 : -4),
+    defect.coordinates.y * 1.5 - 5,
+    defect.coordinates.z + 1.5
+  );
+
+  controls.target.copy(targetPos);
+  camera.position.copy(offset);
+  controls.update();
+
+  // Populate conservation details in sidebar
+  const detailsBox = document.getElementById("active-defect-details");
+  if (detailsBox) {
+    detailsBox.innerHTML = `
+      <div class="cons-header"><strong>${defect.title}</strong> (${defect.id})</div>
+      <div class="cons-line"><strong>Dimensions:</strong> ${defect.dimensions}</div>
+      <div class="cons-line"><strong>Root Cause:</strong> ${defect.probable_cause}</div>
+      <div class="cons-action-highlight">
+        <strong>Recommended Intervention:</strong><br>${defect.conservation_action}
+      </div>
+    `;
+  }
+}
+
+function showDefectPopup(d) {
+  const card = document.getElementById("defect-popup-card");
+  document.getElementById("pop-severity").innerText = d.severity;
+  document.getElementById("pop-severity").className = `popup-tag ${d.severity.toLowerCase()}`;
+  document.getElementById("pop-title").innerText = d.title;
+  document.getElementById("pop-location").innerText = d.location_description;
+  document.getElementById("pop-dimensions").innerText = d.dimensions;
+  document.getElementById("pop-cause").innerText = d.probable_cause;
+  document.getElementById("pop-action").innerText = d.conservation_action;
+  card.classList.remove("hidden");
+}
+
+function closeDefectPopup() {
+  document.getElementById("defect-popup-card").classList.add("hidden");
+}
+
+function onCanvasClick(event) {
+  if (currentActiveTab !== "damage") return;
+
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(defectPinsGroup.children, true);
+
+  if (intersects.length > 0) {
+    let clickedPin = intersects[0].object;
+    while (clickedPin.parent && clickedPin.parent !== defectPinsGroup) {
+      clickedPin = clickedPin.parent;
+    }
+    if (clickedPin.userData && clickedPin.userData.id) {
+      focusOnDefect(clickedPin.userData.id);
+    }
+  }
+}
+
+// =========================================================================
+// CAMERA PRESETS & HUD CONTROLS
+// =========================================================================
+function setCameraPreset(presetKey) {
+  const p = CAMERA_PRESETS[presetKey];
+  if (!p) return;
+
+  camera.position.copy(p.pos);
+  controls.target.copy(p.target);
+  controls.update();
+
+  const hudTag = document.getElementById("hud-active-mode");
+  hudTag.innerText = `View: ${p.name}`;
+}
+
+function resetCamera() {
+  camera.position.set(16.0, -18.0, 9.0);
+  controls.target.set(0, 0, 3.5);
+  controls.update();
 }
 
 function toggleAutoRotate() {
   autoRotate = !autoRotate;
-  const btn = document.getElementById("btn-autorotate");
-  btn.innerText = `Auto-Rotate: ${autoRotate ? "ON" : "OFF"}`;
-  btn.classList.toggle("active", autoRotate);
+  const btn = document.getElementById("btn-autorotate-dev");
+  if (btn) btn.innerText = `Auto-Rotate: ${autoRotate ? "ON" : "OFF"}`;
+  if (btn) btn.classList.toggle("active", autoRotate);
 }
 
-function resetCamera() {
-  setCameraPreset('panorama');
+function captureSnapshot() {
+  renderer.render(scene, camera);
+  const dataURL = renderer.domElement.toDataURL("image/png");
+  const a = document.createElement("a");
+  a.href = dataURL;
+  a.download = `virsa3d_amb_temple_${Date.now()}.png`;
+  a.click();
 }
 
-function setCameraPreset(viewName) {
-  if (!camera || !controls) return;
-  if (viewName === 'panorama') {
-    camera.position.set(38, -32, 16);
-    controls.target.set(12.0, 6.0, 2.0);
-  } else if (viewName === 'main' || viewName === 'main_front') {
-    camera.position.set(16.0, 0.0, 5.0);
-    controls.target.set(0.0, 0.0, 5.0);
-  } else if (viewName === 'main_right') {
-    camera.position.set(0.0, 14.5, 5.0);
-    controls.target.set(0.0, 0.0, 5.0);
-  } else if (viewName === 'main_rear') {
-    camera.position.set(-14.5, 0.0, 5.0);
-    controls.target.set(0.0, 0.0, 5.0);
-  } else if (viewName === 'main_left') {
-    camera.position.set(0.0, -14.5, 5.0);
-    controls.target.set(0.0, 0.0, 5.0);
-  } else if (viewName === 'main_sockets') {
-    camera.position.set(0.0, 7.8, 1.9);
-    controls.target.set(0.0, 3.6, 1.9);
-  } else if (viewName === 'small' || viewName === 'small_oblique') {
-    camera.position.set(33.0, 30.5, -1.6);
-    controls.target.set(42.5, 20.5, -3.2);
-  } else if (viewName === 'small_side') {
-    camera.position.set(42.5, 32.5, -2.5);
-    controls.target.set(42.5, 20.5, -2.5);
-  } else if (viewName === 'small_front') {
-    camera.position.set(33.0, 20.5, -3.0);
-    controls.target.set(42.5, 20.5, -3.0);
-  } else if (viewName === 'small_roof') {
-    camera.position.set(41.2, 20.5, 6.0);
-    controls.target.set(41.2, 20.5, -2.5);
-  } else if (viewName === 'stairs') {
-    camera.position.set(26, 0, 3.5);
-    controls.target.set(16.5, 8.5, -1.2);
-  } else if (viewName === 'mountains') {
-    camera.position.set(22.0, -10.0, 7.5);
-    controls.target.set(-26.0, 0.0, 13.5);
-  } else if (viewName === 'mountains_cliff') {
-    camera.position.set(-8.5, 16.0, 8.5);
-    controls.target.set(-32.0, 0.0, 15.0);
-  } else if (viewName === 'mountains_bastion') {
-    camera.position.set(-12.0, -14.0, 10.0);
-    controls.target.set(-27.5, -4.5, 16.0);
-  } else if (viewName === 'small_mountains') {
-    camera.position.set(31.5, 29.5, -2.0);
-    controls.target.set(45.5, 19.5, 1.2);
-  } else if (viewName === 'mountains_right') {
-    camera.position.set(15.0, -5.0, 5.0);
-    controls.target.set(15.0, 52.0, 15.0);
-  } else if (viewName === 'mountains_left') {
-    camera.position.set(15.0, 5.0, 5.0);
-    controls.target.set(15.0, -52.0, 15.0);
+function updatePanelStates() {
+  const metaPanel = document.getElementById("meta-panel");
+  const metricsPanel = document.getElementById("metrics-panel");
+  const backdrop = document.getElementById("slide-backdrop");
+  const btnMeta = document.getElementById("btn-meta-panel");
+  const btnMetrics = document.getElementById("btn-metrics-panel");
+
+  const isMetaActive = metaPanel && metaPanel.classList.contains("active");
+  const isMetricsActive = metricsPanel && metricsPanel.classList.contains("active");
+  const anyActive = isMetaActive || isMetricsActive;
+
+  if (backdrop) {
+    backdrop.classList.toggle("active", anyActive);
   }
-  controls.update();
+
+  if (metaPanel) {
+    metaPanel.setAttribute("aria-hidden", !isMetaActive);
+  }
+  if (metricsPanel) {
+    metricsPanel.setAttribute("aria-hidden", !isMetricsActive);
+  }
+
+  if (btnMeta) {
+    btnMeta.classList.toggle("active", isMetaActive);
+  }
+  if (btnMetrics) {
+    btnMetrics.classList.toggle("active", isMetricsActive);
+  }
 }
 
-function togglePanel(id) {
-  const panel = document.getElementById(id);
-  panel.classList.toggle("active");
+function togglePanel(panelId) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+
+  const isCurrentlyActive = panel.classList.contains("active");
+
+  // Close all slide panels first
+  ["meta-panel", "metrics-panel"].forEach(id => {
+    const other = document.getElementById(id);
+    if (other) other.classList.remove("active");
+  });
+
+  // If it was closed, open it now
+  if (!isCurrentlyActive) {
+    panel.classList.add("active");
+  }
+
+  updatePanelStates();
 }
 
-function showLoading(show, text = "") {
+function closePanel(panelId) {
+  const panel = document.getElementById(panelId);
+  if (panel) {
+    panel.classList.remove("active");
+  }
+  updatePanelStates();
+}
+
+function closeAllPanels() {
+  ["meta-panel", "metrics-panel"].forEach(id => {
+    const p = document.getElementById(id);
+    if (p) p.classList.remove("active");
+  });
+  updatePanelStates();
+}
+
+// Global ESC key listener to dismiss slide panels or defect popup
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeAllPanels();
+    closeDefectPopup();
+  }
+});
+
+function showLoading(show, title = "", sub = "") {
   const overlay = document.getElementById("loading-overlay");
-  if (show) {
-    overlay.classList.remove("hidden");
-    if (text) document.getElementById("loading-text").innerText = text;
-  } else {
-    overlay.classList.add("hidden");
-  }
+  if (!overlay) return;
+  overlay.style.display = show ? "flex" : "none";
+  if (title) document.getElementById("loading-text").innerText = title;
+  if (sub) document.getElementById("loading-sub").innerText = sub;
 }
-
-// Fetch Backend Site Info
-async function loadSiteInfo() {
-  try {
-    const res = await fetch("/api/site-info");
-    const data = await res.json();
-    document.getElementById("meta-site-name").innerText = data.site_name;
-    document.getElementById("meta-period").innerText = data.period;
-    document.getElementById("meta-region").innerText = `📍 ${data.region}`;
-    document.getElementById("meta-lat").innerText = `${data.gps.latitude}° N`;
-    document.getElementById("meta-lon").innerText = `${data.gps.longitude}° E`;
-    document.getElementById("meta-alt").innerText = `${data.gps.altitude_min_m}m - ${data.gps.altitude_max_m}m`;
-    document.getElementById("meta-images").innerText = `${data.drone_survey.total_images} UAV images`;
-    document.getElementById("meta-drone").innerText = data.drone_survey.platform;
-
-    const featList = document.getElementById("meta-features");
-    if (featList && data.features) {
-      featList.innerHTML = data.features.map(f => `<li>${f}</li>`).join("");
-      const discEl = document.getElementById("metric-discrepancies");
-      const floatEl = document.getElementById("metric-floaters");
-      if (discEl) discEl.innerText = "6,034";
-      if (floatEl) floatEl.innerText = "360";
-    }
-  } catch (e) {
-    console.warn("Could not fetch site info:", e);
-  }
-}
-
-// Fetch Backend Metrics Comparison
-async function loadMetricsComparison() {
-  try {
-    const res = await fetch("/api/metrics/comparison");
-    const data = await res.json();
-    if (data.baseline && data.proposed) {
-      const b = data.baseline.macro_average || {};
-      const p = data.proposed.macro_average || {};
-      const tbody = document.getElementById("metrics-table-body");
-      if (tbody) {
-        tbody.innerHTML = `
-          <tr>
-            <td><strong>Ground</strong></td>
-            <td>${(data.baseline.per_class.ground.iou * 100).toFixed(1)}%</td>
-            <td class="prop">${(data.proposed.per_class.ground.iou * 100).toFixed(1)}%</td>
-            <td>${(data.baseline.per_class.ground.f1 * 100).toFixed(1)}%</td>
-            <td class="prop">${(data.proposed.per_class.ground.f1 * 100).toFixed(1)}%</td>
-          </tr>
-          <tr>
-            <td><strong>Structure</strong></td>
-            <td>${(data.baseline.per_class.structure.iou * 100).toFixed(1)}%</td>
-            <td class="prop">${(data.proposed.per_class.structure.iou * 100).toFixed(1)}%</td>
-            <td>${(data.baseline.per_class.structure.f1 * 100).toFixed(1)}%</td>
-            <td class="prop">${(data.proposed.per_class.structure.f1 * 100).toFixed(1)}%</td>
-          </tr>
-          <tr>
-            <td><strong>Vegetation</strong></td>
-            <td>${(data.baseline.per_class.vegetation.iou * 100).toFixed(1)}%</td>
-            <td class="prop">${(data.proposed.per_class.vegetation.iou * 100).toFixed(1)}%</td>
-            <td>${(data.baseline.per_class.vegetation.f1 * 100).toFixed(1)}%</td>
-            <td class="prop">${(data.proposed.per_class.vegetation.f1 * 100).toFixed(1)}%</td>
-          </tr>
-          <tr class="highlight-row">
-            <td><strong>Mean (Macro)</strong></td>
-            <td>${(b.mean_iou * 100).toFixed(1)}%</td>
-            <td class="prop">${(p.mean_iou * 100).toFixed(1)}%</td>
-            <td>${(b.mean_f1 * 100).toFixed(1)}%</td>
-            <td class="prop">${(p.mean_f1 * 100).toFixed(1)}%</td>
-          </tr>
-        `;
-      }
-      const discEl = document.getElementById("metric-discrepancies");
-      const floatEl = document.getElementById("metric-floaters");
-      if (discEl) discEl.innerText = "6,034";
-      if (floatEl) floatEl.innerText = "360";
-    }
-  } catch (e) {
-    console.warn("Could not fetch metrics comparison:", e);
-  }
-}
-

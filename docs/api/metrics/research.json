@@ -1,0 +1,146 @@
+{
+  "stage1_photogrammetry": {
+    "total_cameras": 146,
+    "aligned_cameras": 146,
+    "sparse_tie_points": 266078,
+    "dense_point_cloud": 9765311,
+    "reprojection_error_rms": 0.455,
+    "gsd_mm_per_pixel": 2.1
+  },
+  "stage1_1_classified_reference": {
+    "total_points": 9765311,
+    "classes": {
+      "structure": {
+        "code": 6,
+        "points": 5528931,
+        "percentage": 56.61
+      },
+      "ground": {
+        "code": 2,
+        "points": 2658007,
+        "percentage": 27.22
+      },
+      "vegetation": {
+        "code": 5,
+        "points": 228056,
+        "percentage": 2.34
+      },
+      "context": {
+        "code": 0,
+        "points": 1350317,
+        "percentage": 13.83
+      }
+    }
+  },
+  "stage2_2d_segmentation": {
+    "model": "Meta SAM 2.1",
+    "test_split_frames": 20,
+    "classes": {
+      "structure": {
+        "precision": 95.12,
+        "recall": 92.6,
+        "f1": 93.85,
+        "iou": 88.42
+      },
+      "ground": {
+        "precision": 94.3,
+        "recall": 90.88,
+        "f1": 92.56,
+        "iou": 86.15
+      },
+      "vegetation": {
+        "precision": 91.55,
+        "recall": 87.89,
+        "f1": 89.68,
+        "iou": 81.3
+      }
+    },
+    "macro_average": {
+      "precision": 93.66,
+      "recall": 90.46,
+      "f1": 92.05,
+      "iou": 85.29
+    }
+  },
+  "stage4_3dgs_photometric": {
+    "structure": {
+      "gaussians": 60000,
+      "train_psnr": 25.12,
+      "test_psnr": 23.85,
+      "ssim": 0.862
+    },
+    "ground": {
+      "gaussians": 60000,
+      "train_psnr": 16.4,
+      "test_psnr": 14.8,
+      "ssim": 0.741
+    },
+    "vegetation": {
+      "gaussians": 60000,
+      "train_psnr": 19.85,
+      "test_psnr": 18.44,
+      "ssim": 0.795
+    }
+  },
+  "stage5_3d_spatial_voxels": {
+    "voxel_grid_size_m": 0.5,
+    "classes": {
+      "structure": {
+        "ref_voxels": 15511,
+        "3dgs_voxels": 9921,
+        "tp": 9886,
+        "precision": 99.65,
+        "recall": 63.74,
+        "f1": 77.74,
+        "iou": 63.59
+      },
+      "ground": {
+        "ref_voxels": 12912,
+        "3dgs_voxels": 9188,
+        "tp": 9165,
+        "precision": 99.75,
+        "recall": 70.98,
+        "f1": 82.94,
+        "iou": 70.85
+      },
+      "vegetation": {
+        "ref_voxels": 2917,
+        "3dgs_voxels": 2762,
+        "tp": 2734,
+        "precision": 98.99,
+        "recall": 93.73,
+        "f1": 96.28,
+        "iou": 92.84
+      }
+    },
+    "macro_precision": 99.46,
+    "macro_iou": 75.76
+  },
+  "stage5_m3c2_geometric_accuracy": {
+    "mean_distance_cm": 5.18,
+    "median_distance_cm": 4.54,
+    "std_deviation_cm": 5.22,
+    "within_tolerance_6cm_pct": 70.44,
+    "lod_95_cm": 2.84
+  },
+  "viewpoint_ablation_novelty": {
+    "config_a_nadir": {
+      "cameras": 3,
+      "coverage_pct": 77.28,
+      "data_voids_pct": 22.72,
+      "mean_views": 2.8
+    },
+    "config_b_nadir_oblique": {
+      "cameras": 41,
+      "coverage_pct": 99.72,
+      "data_voids_pct": 0.28,
+      "mean_views": 5.8
+    },
+    "config_c_virsa3d_full": {
+      "cameras": 146,
+      "coverage_pct": 100.0,
+      "data_voids_pct": 0.0,
+      "mean_views": 48.5
+    }
+  }
+}

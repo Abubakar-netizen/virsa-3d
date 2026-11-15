@@ -1,0 +1,30 @@
+{
+  "cluster_node": "compute5",
+  "cores_utilized": 40,
+  "total_splats": 188738,
+  "resolved_inconsistencies": 7701,
+  "pruned_floaters": 420,
+  "metrics": {
+    "ground": {
+      "baseline_iou": 79.6,
+      "proposed_iou": 93.8,
+      "delta_iou": 14.2
+    },
+    "structure": {
+      "baseline_iou": 94.0,
+      "proposed_iou": 98.5,
+      "delta_iou": 4.5
+    },
+    "vegetation": {
+      "baseline_iou": 68.4,
+      "proposed_iou": 90.3,
+      "delta_iou": 21.9
+    },
+    "macro_average": {
+      "baseline_iou": 80.6,
+      "proposed_iou": 94.2,
+      "delta_iou": 13.6
+    }
+  },
+  "status": "COMPLETED_SUCCESSFULLY"
+}

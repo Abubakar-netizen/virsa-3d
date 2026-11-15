@@ -1,0 +1,85 @@
+{
+  "site": "Amb Hindu Shahi Temple",
+  "health_score": 78,
+  "structural_status": "Stable with Localized Vulnerabilities",
+  "conservation_priority": "Immediate Joint Stabilization & Lintel Grouting",
+  "last_survey_date": "2026-11-15",
+  "total_anomalies_logged": 5,
+  "defects": [
+    {
+      "id": "DEF-01",
+      "title": "Collapsed Lantern / Amalaka Summit",
+      "category": "Structural Void / Superstructure Failure",
+      "severity": "Critical",
+      "location_description": "Shikhara Tower Apex (Z = +13.5m)",
+      "coordinates": {
+        "x": 0.0,
+        "y": 0.2,
+        "z": 6.8
+      },
+      "dimensions": "Diameter ~2.4m, Depth ~1.1m",
+      "probable_cause": "Historical seismic shaking combined with missing tie timbers",
+      "conservation_action": "Install weather-resistant titanium internal tie anchors and non-invasive protective cap"
+    },
+    {
+      "id": "DEF-02",
+      "title": "Fractured Portico Entrance Lintel",
+      "category": "Masonry Shear Crack",
+      "severity": "Critical",
+      "location_description": "Main Sanctum Entrance Beam",
+      "coordinates": {
+        "x": -0.85,
+        "y": -2.4,
+        "z": 0.95
+      },
+      "dimensions": "Length ~1.45m, Width 3-8mm",
+      "probable_cause": "Differential overburden load from upper pediment pedimentation",
+      "conservation_action": "Hydraulic lime micro-grouting and external carbon-fiber rod reinforcement"
+    },
+    {
+      "id": "DEF-03",
+      "title": "Western Plinth Salt Sub-efflorescence & Spalling",
+      "category": "Material Deterioration / Spalling",
+      "severity": "Moderate",
+      "location_description": "Basal Plinth Molding (Western Facade)",
+      "coordinates": {
+        "x": -2.8,
+        "y": -0.5,
+        "z": -1.8
+      },
+      "dimensions": "Surface area ~3.2 sq. meters, Relief loss 15-40mm",
+      "probable_cause": "Capillary groundwater rise carrying Salt Range halite minerals",
+      "conservation_action": "Cellulose poultice desalination followed by sacrificial lime rendering"
+    },
+    {
+      "id": "DEF-04",
+      "title": "North-East Facade Joint Leaching & Mortar Loss",
+      "category": "Joint Erosion / Mortar Depletion",
+      "severity": "Moderate",
+      "location_description": "Upper Shikhara Horizontal Masonry Courses",
+      "coordinates": {
+        "x": 1.9,
+        "y": 1.4,
+        "z": 4.1
+      },
+      "dimensions": "Depth of open joints: 40-90mm",
+      "probable_cause": "Intense seasonal monsoon rainwater washing through dry ashlar joints",
+      "conservation_action": "Deep pointing with natural hydraulic lime (NHL 3.5) mortar"
+    },
+    {
+      "id": "DEF-05",
+      "title": "Bio-Crust & Lichen Colonization",
+      "category": "Biological Growth",
+      "severity": "Minor",
+      "location_description": "Shaded Northern Pilaster Recesses",
+      "coordinates": {
+        "x": 0.4,
+        "y": 2.6,
+        "z": 2.2
+      },
+      "dimensions": "Area ~4.5 sq. meters",
+      "probable_cause": "High relative humidity in shaded vertical flutes during winter",
+      "conservation_action": "Biocidal wash (quaternary ammonium compound) with soft bristle brush"
+    }
+  ]
+}

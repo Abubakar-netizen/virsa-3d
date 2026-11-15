@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virsa3D — Amb Hindu Shahi Temple 3D Digital Twin & AI Conservation System</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Three.js Core & Loaders via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
+</head>
+<body>
+  <!-- Top Application Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-icon">🏛️</div>
+      <div class="brand-text">
+        <h1>VIRSA3D</h1>
+        <span class="subtitle">AI Cultural Heritage Digital Twin & Conservation Platform</span>
+      </div>
+    </div>
+
+    <!-- Central Mode Navigation Tabs -->
+    <div class="header-center">
+      <div class="main-tabs-container">
+        <button id="tab-dev" class="main-tab active" onclick="switchActiveTab('dev')">
+          <span class="tab-icon">🏛️</span> Real 3D Model <span class="tab-badge dev">Development Twin</span>
+        </button>
+        <button id="tab-research" class="main-tab" onclick="switchActiveTab('research')">
+          <span class="tab-icon">🔬</span> Research Results <span class="tab-badge res">Evaluation Benchmarks</span>
+        </button>
+        <button id="tab-damage" class="main-tab" onclick="switchActiveTab('damage')">
+          <span class="tab-icon">🔍</span> AI Damage Detection <span class="tab-badge dam">Conservation</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Header Actions & Status -->
+    <div class="header-right">
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span id="site-status">Digital Twin Live (4K Textures)</span>
+      </div>
+      <button id="btn-meta-panel" class="icon-btn" onclick="togglePanel('meta-panel')" title="Archaeological Metadata">ℹ️ Site Context</button>
+      <button id="btn-metrics-panel" class="icon-btn" onclick="togglePanel('metrics-panel')" title="Research Benchmarks">📊 Research Benchmarks</button>
+      <a href="/api/models/real_textured_obj" download="amb_temple_textured_model.obj" class="download-pill" title="Download Master 3D Mesh OBJ">
+        📥 3D OBJ
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Viewport Workspace -->
+  <div class="main-container">
+    <!-- Click-outside backdrop to dismiss slide panels -->
+    <div id="slide-backdrop" class="slide-backdrop" onclick="closeAllPanels()"></div>
+    <!-- Left Dynamic Controls Sidebar -->
+    <aside class="left-panel">
+
+      <!-- ==================== TAB 1: DEVELOPMENT CONTROLS ==================== -->
+      <div id="controls-dev" class="tab-controls-group active">
+        <div class="panel-section">
+          <h3>🎨 Surface Rendering & Textures</h3>
+          <p class="section-desc">Authentic photo-projected 4K stone textures:</p>
+          <div class="pill-selector">
+            <button class="pill-btn active" id="btn-mode-texture" onclick="setTextureMode('texture')">Full 4K Texture</button>
+            <button class="pill-btn" id="btn-mode-clay" onclick="setTextureMode('clay')">Sandstone Clay</button>
+            <button class="pill-btn" id="btn-mode-wire" onclick="setTextureMode('wireframe')">Polygonal Wireframe</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>⚡ Model Resolution (LOD)</h3>
+          <div class="lod-switch">
+            <button class="action-btn active" id="btn-lod-fast" onclick="switchLod('fast')">⚡ 60 FPS Web Twin (300k Faces)</button>
+            <button class="action-btn secondary" id="btn-lod-master" onclick="switchLod('master')">💎 Ultra-Dense Master (2.92M Faces)</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>☀️ Lighting & Atmosphere</h3>
+          <div class="control-row">
+            <label>Daylight Profile</label>
+            <select id="select-lighting" onchange="changeLightingProfile(this.value)" class="custom-select">
+              <option value="warm_sun">☀️ Salt Range Sun (Warm Daylight)</option>
+              <option value="golden_hour">🌅 Golden Hour Sunset</option>
+              <option value="overcast">☁️ Diffuse Overcast (Neutral)</option>
+              <option value="archaeological">🏛️ Museum Direct Inspection</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <label>Sun Intensity</label>
+            <input type="range" id="slider-sun-intensity" min="0.5" max="2.5" step="0.1" value="1.4" oninput="changeSunIntensity(this.value)">
+            <span id="val-sun-intensity">1.4x</span>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>🎥 Architectural Camera Presets</h3>
+          <div class="preset-grid">
+            <button class="action-btn secondary preset-btn" onclick="setCameraPreset('main_front')">🏛️ Front Portico</button>
+            <button class="action-btn secondary preset-btn" onclick="setCameraPreset('main_oblique')">📐 45° Oblique View</button>
+            <button class="action-btn secondary preset-btn" onclick="setCameraPreset('main_shikhara')">🛕 Shikhara Apex</button>
+            <button class="action-btn secondary preset-btn" onclick="setCameraPreset('main_plinth')">🧱 Basal Plinth</button>
+            <button class="action-btn secondary preset-btn" onclick="setCameraPreset('main_rear')">🏛️ Rear Elevation</button>
+            <button class="action-btn secondary preset-btn" onclick="setCameraPreset('aerial_drone')">🦅 Aerial Drone</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="control-row">
+            <button id="btn-autorotate-dev" class="action-btn" onclick="toggleAutoRotate()">Auto-Rotate: OFF</button>
+          </div>
+          <div class="control-row">
+            <button class="action-btn secondary" onclick="resetCamera()">Reset Center View</button>
+            <button class="action-btn secondary" onclick="captureSnapshot()">📸 Snapshot</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 2: RESEARCH CONTROLS ==================== -->
+      <div id="controls-research" class="tab-controls-group">
+        <div class="panel-section">
+          <h3>🔬 Research Deliverables</h3>
+          <p class="section-desc">Scientific artifacts from the 5-stage pipeline:</p>
+          <div class="pill-selector">
+            <button class="pill-btn active" id="btn-res-mesh" onclick="switchResearchArtifact('mesh')">Research 3D Mesh</button>
+            <button class="pill-btn" id="btn-res-3dgs" onclick="switchResearchArtifact('3dgs')">3DGS Radiance Field</button>
+            <button class="pill-btn" id="btn-res-asprs" onclick="switchResearchArtifact('asprs')">ASPRS Point Cloud</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>🏷️ Semantic Coordinate Manifolds</h3>
+          <p class="section-desc">Class-specific decomposed radiance layers:</p>
+          <div class="layer-toggles">
+            <label class="toggle-item">
+              <input type="checkbox" id="layer-structure" checked onchange="toggleSemanticLayer('structure')">
+              <span class="color-dot dot-structure"></span>
+              <span class="layer-label">Structure (ASPRS Class 6)</span>
+            </label>
+            <label class="toggle-item">
+              <input type="checkbox" id="layer-ground" checked onchange="toggleSemanticLayer('ground')">
+              <span class="color-dot dot-ground"></span>
+              <span class="layer-label">Ground / Plinth (Class 2)</span>
+            </label>
+            <label class="toggle-item">
+              <input type="checkbox" id="layer-vegetation" checked onchange="toggleSemanticLayer('vegetation')">
+              <span class="color-dot dot-vegetation"></span>
+              <span class="layer-label">Arid Vegetation (Class 5)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>📊 Verified Scientific Benchmarks</h3>
+          <div class="mini-metrics-box">
+            <div class="m-card">
+              <div class="m-val text-cyan">99.65%</div>
+              <div class="m-lbl">3D Voxel Precision (Table 4)</div>
+            </div>
+            <div class="m-card">
+              <div class="m-val text-green">88.42%</div>
+              <div class="m-lbl">Structure 2D IoU (Table 2)</div>
+            </div>
+            <div class="m-card">
+              <div class="m-val text-amber">5.18 cm</div>
+              <div class="m-lbl">M3C2 Geometric Distance</div>
+            </div>
+            <div class="m-card">
+              <div class="m-val text-emerald">0.00%</div>
+              <div class="m-lbl">Vertical Voids (Table 5)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="control-row">
+            <label>Point / Splat Radius</label>
+            <input type="range" id="slider-point-size" min="0.02" max="0.30" step="0.01" value="0.10" oninput="changePointSize(this.value)">
+            <span id="val-point-size">0.10</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 3: DAMAGE DETECTION CONTROLS ==================== -->
+      <div id="controls-damage" class="tab-controls-group">
+        <div class="panel-section">
+          <h3>🔍 AI Structural Health Diagnostic</h3>
+          <div class="health-gauge-box">
+            <div class="health-score-circle">
+              <span class="score-num">78</span>
+              <span class="score-denom">/100</span>
+            </div>
+            <div class="health-meta">
+              <div class="status-badge stable">Stable / Monitored</div>
+              <div class="sub-text">5 Historical Anomalies Logged</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>📍 Architectural Defect Ledger</h3>
+          <p class="section-desc">Click any defect to navigate and inspect on 3D mesh:</p>
+          <div class="defect-list" id="defect-list-container">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>🛡️ Conservation Recommendations</h3>
+          <div class="conservation-box" id="active-defect-details">
+            <p class="hint-text">Select an anomaly from the ledger above to view diagnostic cause and recommended heritage intervention.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry Footer Section -->
+      <div class="panel-section stats-section">
+        <h3>📡 Scene Telemetry</h3>
+        <div class="telemetry-grid">
+          <div><span class="k">Active Mesh:</span> <span id="tele-mesh-name" class="v highlight">Web 4K Twin</span></div>
+          <div><span class="k">Polygons:</span> <span id="tele-faces" class="v">300,000</span></div>
+          <div><span class="k">Texture Atlas:</span> <span class="v">4096 x 4096 px</span></div>
+          <div><span class="k">FPS:</span> <span id="tele-fps" class="v highlight">60 FPS</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 3D WebGL Canvas Viewport -->
+    <main id="canvas-container">
+      <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-text">Streaming High-Fidelity Amb Temple Digital Twin...</div>
+        <div class="loading-sub" id="loading-sub">Loading PBR Sandstone 4K Texture Atlas...</div>
+      </div>
+
+      <!-- Interactive 3D Canvas HUD Overlay -->
+      <div class="canvas-hud">
+        <div class="hud-item">Left Click: <strong>Rotate 3D</strong></div>
+        <div class="hud-item">Right Click: <strong>Pan</strong></div>
+        <div class="hud-item">Scroll Wheel: <strong>Zoom</strong></div>
+        <div class="hud-item mode-tag" id="hud-active-mode">Mode: Realistic 3D Model</div>
+      </div>
+
+      <!-- Damage Inspection Card Overlay (Shown when defect pin is clicked) -->
+      <div id="defect-popup-card" class="defect-popup-card hidden">
+        <div class="popup-header">
+          <span class="popup-tag" id="pop-severity">Critical</span>
+          <button class="popup-close" onclick="closeDefectPopup()">×</button>
+        </div>
+        <h4 id="pop-title">Defect Title</h4>
+        <p class="pop-loc" id="pop-location">Location: Portico Beam</p>
+        <div class="pop-body">
+          <div><strong>Dimensions:</strong> <span id="pop-dimensions">--</span></div>
+          <div><strong>Cause:</strong> <span id="pop-cause">--</span></div>
+          <div class="pop-action"><strong>Conservation Action:</strong> <span id="pop-action">--</span></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Slide-over: Archaeological Heritage Metadata Panel -->
+    <aside id="meta-panel" class="slide-panel right" aria-hidden="true">
+      <div class="panel-header">
+        <h2>🏛️ Archaeological Heritage Metadata</h2>
+        <button class="close-btn" onclick="closePanel('meta-panel')" aria-label="Close Archaeological Metadata panel" title="Close">×</button>
+      </div>
+      <div class="panel-content">
+        <div class="meta-card">
+          <h4 id="meta-site-name">Amb Hindu Shahi Temple Complex</h4>
+          <span class="badge">7th – 9th Century CE (Hindu Shahi Period)</span>
+          <p class="region-text">📍 Salt Range, Khushab District, Punjab, Pakistan</p>
+        </div>
+
+        <div class="meta-section">
+          <h4>🛰️ Geodetic & Drone Survey Parameters</h4>
+          <table class="meta-table">
+            <tr><td>Geodetic Datum:</td><td class="code">WGS 84 / UTM Zone 43N</td></tr>
+            <tr><td>Latitude / Longitude:</td><td class="code">32.5084334° N, 71.9363274° E</td></tr>
+            <tr><td>Summit Elevation:</td><td class="code">822.5 m ASL</td></tr>
+            <tr><td>Tower Height:</td><td class="code">13.5 m Monumental Shikhara</td></tr>
+            <tr><td>Calibrated Cameras:</td><td class="code">146 / 146 Aligned (100.0%)</td></tr>
+            <tr><td>Ground Sampling Distance (GSD):</td><td class="code">2.10 mm/pixel</td></tr>
+            <tr><td>RMS Reprojection Error:</td><td class="code">0.455 pixels</td></tr>
+            <tr><td>Flight Architecture:</td><td class="code">3-Tier Cross-View Multi-Angle</td></tr>
+          </table>
+        </div>
+
+        <div class="meta-section">
+          <h4>Key Architectural Elements</h4>
+          <ul class="feature-list">
+            <li><strong>Curvilinear Shikhara:</strong> Kashmir-Gandharan stepped stone tower with fluted vertical pilasters.</li>
+            <li><strong>Trifoliate Portico:</strong> Pedimented sanctum doorway featuring relief moldings and carved kanja stone lintels.</li>
+            <li><strong>Ashlar Masonry:</strong> Finely dressed sandstone blocks laid in dry mortarless courses.</li>
+            <li><strong>Circumambulatory Plinth:</strong> Elevated masonry terrace designed for ritual pradakshina.</li>
+          </ul>
+        </div>
+
+        <div class="meta-section">
+          <h4>Project Team & Academic Supervision</h4>
+          <p class="small-text"><strong>Final Year Project:</strong> Virsa3D — AI-Assisted Cultural Heritage Preservation</p>
+          <p class="small-text"><strong>Institution:</strong> FAST-NUCES, Chiniot-Faisalabad Campus</p>
+          <p class="small-text"><strong>Authors:</strong> Abubakar Siddique, Mubashra Afzal, Zia Ur Rehman</p>
+          <p class="small-text"><strong>Supervisor:</strong> Mr. Umar Iqbal</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Slide-over: Research Evaluation Benchmarks Panel -->
+    <aside id="metrics-panel" class="slide-panel right" aria-hidden="true">
+      <div class="panel-header">
+        <h2>📊 Scientific Research Benchmarks</h2>
+        <button class="close-btn" onclick="closePanel('metrics-panel')" aria-label="Close Research Benchmarks panel" title="Close">×</button>
+      </div>
+      <div class="panel-content">
+        <div class="metrics-banner">
+          <div>
+            <span class="num text-green">100.0%</span>
+            <span class="lbl">Facade Coverage (0% Voids)</span>
+          </div>
+          <div>
+            <span class="num text-cyan">99.65%</span>
+            <span class="lbl">3D Voxel Precision</span>
+          </div>
+          <div>
+            <span class="num text-amber">5.18 cm</span>
+            <span class="lbl">M3C2 Mean Distance</span>
+          </div>
+        </div>
+
+        <div class="meta-section">
+          <h4>Table 2: 2D Semantic Segmentation (Meta SAM 2.1 on 20 Held-Out Frames)</h4>
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1-Score</th>
+                <th>2D IoU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Structure</strong></td><td>95.12%</td><td>92.60%</td><td>93.85%</td><td class="prop">88.42%</td></tr>
+              <tr><td><strong>Ground</strong></td><td>94.30%</td><td>90.88%</td><td>92.56%</td><td class="prop">86.15%</td></tr>
+              <tr><td><strong>Vegetation</strong></td><td>91.55%</td><td>87.89%</td><td>89.68%</td><td class="prop">81.30%</td></tr>
+              <tr class="highlight-row"><td><strong>Macro Mean</strong></td><td>93.66%</td><td>90.46%</td><td>92.05%</td><td class="prop">85.29%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="meta-section">
+          <h4>Table 4: 3D Spatial Voxel Evaluation (0.5m Grid vs 9.76M Classified Cloud)</h4>
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Voxel Precision</th>
+                <th>Voxel Recall</th>
+                <th>Voxel F1</th>
+                <th>3D Voxel IoU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Structure</strong></td><td class="prop">99.65%</td><td>63.74%</td><td>77.74%</td><td>63.59%</td></tr>
+              <tr><td><strong>Ground</strong></td><td class="prop">99.75%</td><td>70.98%</td><td>82.94%</td><td>70.85%</td></tr>
+              <tr><td><strong>Vegetation</strong></td><td class="prop">98.99%</td><td>93.73%</td><td>96.28%</td><td>92.84%</td></tr>
+              <tr class="highlight-row"><td><strong>Macro Mean</strong></td><td class="prop">99.46%</td><td>76.15%</td><td>85.65%</td><td>75.76%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="meta-section">
+          <h4>Table 5: Controlled Viewpoint Ablation Experiment (Novelty Proof)</h4>
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Configuration</th>
+                <th>Cameras</th>
+                <th>Facade Coverage</th>
+                <th>Vertical Voids</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Config A (Nadir-Only)</td><td>3</td><td>77.28%</td><td class="void">22.72%</td></tr>
+              <tr><td>Config B (Nadir+Oblique)</td><td>41</td><td>99.72%</td><td>0.28%</td></tr>
+              <tr class="highlight-row"><td><strong>Config C (Virsa3D Full)</strong></td><td><strong>146</strong></td><td class="prop"><strong>100.00%</strong></td><td class="prop"><strong>0.00%</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="meta-section">
+          <h4>Peer-Reviewed Baseline Citation</h4>
+          <p class="small-text">A. Widiatmoko, N. Fadilah et al., <em>"Automatic Segmentation of 3D Gaussian Splatting in Cultural Heritage Complex,"</em> The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences (ISPRS Archives), Vol. XLIX-B2-2026, pp. 825–832, 2026.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

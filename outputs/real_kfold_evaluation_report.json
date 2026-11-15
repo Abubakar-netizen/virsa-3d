@@ -1,0 +1,1164 @@
+{
+  "evaluation_protocol": "5-Fold Stratified Cross-Validation on Amb Temple Labeled Dataset",
+  "segmentation_model": "Meta SAM 2.1 (facebook/sam2.1-hiera-tiny)",
+  "dataset_images": 127,
+  "total_experiment_duration_seconds": 131.51,
+  "aggregate_results": {
+    "baseline1_direct_lifting": {
+      "mean_iou_pct": 28.86,
+      "std_iou_pct": 2.39,
+      "mean_f1_pct": 42.64,
+      "std_f1_pct": 2.82,
+      "avg_runtime_seconds": 0.777
+    },
+    "baseline2_majority_voting": {
+      "mean_iou_pct": 35.3,
+      "std_iou_pct": 2.05,
+      "mean_f1_pct": 48.44,
+      "std_f1_pct": 1.96,
+      "avg_runtime_seconds": 1.766
+    },
+    "proposed_ablation_without_zbuffer": {
+      "mean_iou_pct": 36.81,
+      "std_iou_pct": 2.27
+    },
+    "proposed_ablation_without_normals": {
+      "mean_iou_pct": 24.54,
+      "std_iou_pct": 2.41
+    },
+    "proposed_virsa3d_full": {
+      "mean_iou_pct": 24.62,
+      "std_iou_pct": 2.33,
+      "mean_f1_pct": 37.77,
+      "std_f1_pct": 2.98,
+      "avg_runtime_seconds": 2.307
+    }
+  },
+  "fold_details": [
+    {
+      "fold": 1,
+      "segmentation_backbone": "Meta SAM 2.1 (facebook/sam2.1-hiera-tiny)",
+      "triangulated_points": 8664,
+      "evaluated_points": 8026,
+      "camera_views": 20,
+      "timing_seconds": {
+        "sfm": 17.39,
+        "pca_normals": 0.237,
+        "baseline1_direct_lifting": 0.814,
+        "baseline2_majority_voting": 1.955,
+        "proposed_viewpoint_fusion": 2.536
+      },
+      "metrics": {
+        "baseline1_direct_lifting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.3349,
+              "f1": 0.5017,
+              "precision": 0.7659,
+              "recall": 0.3731,
+              "accuracy": 0.5021,
+              "tp": 2012,
+              "fp": 615,
+              "fn": 3381
+            },
+            "Heritage Structure": {
+              "iou": 0.4356,
+              "f1": 0.6069,
+              "precision": 0.5374,
+              "recall": 0.6969,
+              "accuracy": 0.7509,
+              "tp": 1543,
+              "fp": 1328,
+              "fn": 671
+            },
+            "Vegetation": {
+              "iou": 0.1462,
+              "f1": 0.2551,
+              "precision": 0.4438,
+              "recall": 0.179,
+              "accuracy": 0.9454,
+              "tp": 75,
+              "fp": 94,
+              "fn": 344
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3056,
+            "mean_f1": 0.4546,
+            "mean_precision": 0.5824,
+            "mean_recall": 0.4163
+          }
+        },
+        "baseline2_majority_voting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.4668,
+              "f1": 0.6365,
+              "precision": 0.7434,
+              "recall": 0.5565,
+              "accuracy": 0.5729,
+              "tp": 3001,
+              "fp": 1036,
+              "fn": 2392
+            },
+            "Heritage Structure": {
+              "iou": 0.4025,
+              "f1": 0.574,
+              "precision": 0.6917,
+              "recall": 0.4905,
+              "accuracy": 0.7992,
+              "tp": 1086,
+              "fp": 484,
+              "fn": 1128
+            },
+            "Vegetation": {
+              "iou": 0.1247,
+              "f1": 0.2218,
+              "precision": 0.7143,
+              "recall": 0.1313,
+              "accuracy": 0.9519,
+              "tp": 55,
+              "fp": 22,
+              "fn": 364
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3313,
+            "mean_f1": 0.4774,
+            "mean_precision": 0.7165,
+            "mean_recall": 0.3928
+          }
+        },
+        "proposed_viewpoint_fusion": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.3215,
+              "f1": 0.4866,
+              "precision": 0.7493,
+              "recall": 0.3603,
+              "accuracy": 0.4892,
+              "tp": 1943,
+              "fp": 650,
+              "fn": 3450
+            },
+            "Heritage Structure": {
+              "iou": 0.2239,
+              "f1": 0.3658,
+              "precision": 0.6577,
+              "recall": 0.2534,
+              "accuracy": 0.7577,
+              "tp": 561,
+              "fp": 292,
+              "fn": 1653
+            },
+            "Vegetation": {
+              "iou": 0.1222,
+              "f1": 0.2179,
+              "precision": 0.4326,
+              "recall": 0.1456,
+              "accuracy": 0.9454,
+              "tp": 61,
+              "fp": 80,
+              "fn": 358
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.2225,
+            "mean_f1": 0.3568,
+            "mean_precision": 0.6132,
+            "mean_recall": 0.2531
+          }
+        },
+        "ablation_without_zbuffer": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.4556,
+              "f1": 0.626,
+              "precision": 0.7592,
+              "recall": 0.5325,
+              "accuracy": 0.5724,
+              "tp": 2872,
+              "fp": 911,
+              "fn": 2521
+            },
+            "Heritage Structure": {
+              "iou": 0.4262,
+              "f1": 0.5976,
+              "precision": 0.6779,
+              "recall": 0.5343,
+              "accuracy": 0.8015,
+              "tp": 1183,
+              "fp": 562,
+              "fn": 1031
+            },
+            "Vegetation": {
+              "iou": 0.1491,
+              "f1": 0.2595,
+              "precision": 0.6476,
+              "recall": 0.1623,
+              "accuracy": 0.9517,
+              "tp": 68,
+              "fp": 37,
+              "fn": 351
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3436,
+            "mean_f1": 0.4944,
+            "mean_precision": 0.6949,
+            "mean_recall": 0.4097
+          }
+        },
+        "ablation_without_normals": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.3235,
+              "f1": 0.4888,
+              "precision": 0.7502,
+              "recall": 0.3625,
+              "accuracy": 0.4905,
+              "tp": 1955,
+              "fp": 651,
+              "fn": 3438
+            },
+            "Heritage Structure": {
+              "iou": 0.2254,
+              "f1": 0.3679,
+              "precision": 0.6683,
+              "recall": 0.2538,
+              "accuracy": 0.7594,
+              "tp": 562,
+              "fp": 279,
+              "fn": 1652
+            },
+            "Vegetation": {
+              "iou": 0.1225,
+              "f1": 0.2182,
+              "precision": 0.4357,
+              "recall": 0.1456,
+              "accuracy": 0.9456,
+              "tp": 61,
+              "fp": 79,
+              "fn": 358
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.2238,
+            "mean_f1": 0.3583,
+            "mean_precision": 0.6181,
+            "mean_recall": 0.254
+          }
+        }
+      },
+      "proposed_telemetry": {
+        "total_points": 8026,
+        "conflicts_resolved": 3166,
+        "total_rays_evaluated": 112371,
+        "occluded_rays_culled": 62829,
+        "backfaces_culled": 7,
+        "mean_uncertainty": 0.6955907344818115,
+        "high_confidence_ratio": 0.13344131572389734
+      }
+    },
+    {
+      "fold": 2,
+      "segmentation_backbone": "Meta SAM 2.1 (facebook/sam2.1-hiera-tiny)",
+      "triangulated_points": 6864,
+      "evaluated_points": 6441,
+      "camera_views": 20,
+      "timing_seconds": {
+        "sfm": 13.96,
+        "pca_normals": 0.19,
+        "baseline1_direct_lifting": 0.663,
+        "baseline2_majority_voting": 1.551,
+        "proposed_viewpoint_fusion": 2.042
+      },
+      "metrics": {
+        "baseline1_direct_lifting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.4674,
+              "f1": 0.6371,
+              "precision": 0.7517,
+              "recall": 0.5528,
+              "accuracy": 0.5748,
+              "tp": 2404,
+              "fp": 794,
+              "fn": 1945
+            },
+            "Heritage Structure": {
+              "iou": 0.373,
+              "f1": 0.5433,
+              "precision": 0.5033,
+              "recall": 0.5901,
+              "accuracy": 0.7249,
+              "tp": 1054,
+              "fp": 1040,
+              "fn": 732
+            },
+            "Vegetation": {
+              "iou": 0.077,
+              "f1": 0.143,
+              "precision": 0.1203,
+              "recall": 0.1765,
+              "accuracy": 0.8995,
+              "tp": 54,
+              "fp": 395,
+              "fn": 252
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3058,
+            "mean_f1": 0.4411,
+            "mean_precision": 0.4584,
+            "mean_recall": 0.4398
+          }
+        },
+        "baseline2_majority_voting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.5964,
+              "f1": 0.7472,
+              "precision": 0.7489,
+              "recall": 0.7455,
+              "accuracy": 0.6594,
+              "tp": 3242,
+              "fp": 1087,
+              "fn": 1107
+            },
+            "Heritage Structure": {
+              "iou": 0.3893,
+              "f1": 0.5604,
+              "precision": 0.6993,
+              "recall": 0.4675,
+              "accuracy": 0.7966,
+              "tp": 835,
+              "fp": 359,
+              "fn": 951
+            },
+            "Vegetation": {
+              "iou": 0.0436,
+              "f1": 0.0836,
+              "precision": 0.0943,
+              "recall": 0.0752,
+              "accuracy": 0.9218,
+              "tp": 23,
+              "fp": 221,
+              "fn": 283
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3431,
+            "mean_f1": 0.4637,
+            "mean_precision": 0.5142,
+            "mean_recall": 0.4294
+          }
+        },
+        "proposed_viewpoint_fusion": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.389,
+              "f1": 0.5601,
+              "precision": 0.7258,
+              "recall": 0.456,
+              "accuracy": 0.5164,
+              "tp": 1983,
+              "fp": 749,
+              "fn": 2366
+            },
+            "Heritage Structure": {
+              "iou": 0.1911,
+              "f1": 0.3209,
+              "precision": 0.6139,
+              "recall": 0.2172,
+              "accuracy": 0.7451,
+              "tp": 388,
+              "fp": 244,
+              "fn": 1398
+            },
+            "Vegetation": {
+              "iou": 0.0664,
+              "f1": 0.1245,
+              "precision": 0.1615,
+              "recall": 0.1013,
+              "accuracy": 0.9323,
+              "tp": 31,
+              "fp": 161,
+              "fn": 275
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.2155,
+            "mean_f1": 0.3352,
+            "mean_precision": 0.5004,
+            "mean_recall": 0.2582
+          }
+        },
+        "ablation_without_zbuffer": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.5997,
+              "f1": 0.7498,
+              "precision": 0.7643,
+              "recall": 0.7358,
+              "accuracy": 0.6684,
+              "tp": 3200,
+              "fp": 987,
+              "fn": 1149
+            },
+            "Heritage Structure": {
+              "iou": 0.4118,
+              "f1": 0.5833,
+              "precision": 0.7044,
+              "recall": 0.4978,
+              "accuracy": 0.8028,
+              "tp": 889,
+              "fp": 373,
+              "fn": 897
+            },
+            "Vegetation": {
+              "iou": 0.0528,
+              "f1": 0.1003,
+              "precision": 0.1066,
+              "recall": 0.0948,
+              "accuracy": 0.9193,
+              "tp": 29,
+              "fp": 243,
+              "fn": 277
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3548,
+            "mean_f1": 0.4778,
+            "mean_precision": 0.5251,
+            "mean_recall": 0.4428
+          }
+        },
+        "ablation_without_normals": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.3873,
+              "f1": 0.5583,
+              "precision": 0.7212,
+              "recall": 0.4555,
+              "accuracy": 0.5134,
+              "tp": 1981,
+              "fp": 766,
+              "fn": 2368
+            },
+            "Heritage Structure": {
+              "iou": 0.1806,
+              "f1": 0.306,
+              "precision": 0.5987,
+              "recall": 0.2055,
+              "accuracy": 0.7415,
+              "tp": 367,
+              "fp": 246,
+              "fn": 1419
+            },
+            "Vegetation": {
+              "iou": 0.0661,
+              "f1": 0.124,
+              "precision": 0.1598,
+              "recall": 0.1013,
+              "accuracy": 0.932,
+              "tp": 31,
+              "fp": 163,
+              "fn": 275
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.2113,
+            "mean_f1": 0.3294,
+            "mean_precision": 0.4932,
+            "mean_recall": 0.2541
+          }
+        }
+      },
+      "proposed_telemetry": {
+        "total_points": 6441,
+        "conflicts_resolved": 2803,
+        "total_rays_evaluated": 88088,
+        "occluded_rays_culled": 46040,
+        "backfaces_culled": 71,
+        "mean_uncertainty": 0.6206759810447693,
+        "high_confidence_ratio": 0.19810588417947525
+      }
+    },
+    {
+      "fold": 3,
+      "segmentation_backbone": "Meta SAM 2.1 (facebook/sam2.1-hiera-tiny)",
+      "triangulated_points": 9421,
+      "evaluated_points": 8675,
+      "camera_views": 20,
+      "timing_seconds": {
+        "sfm": 17.67,
+        "pca_normals": 0.258,
+        "baseline1_direct_lifting": 0.902,
+        "baseline2_majority_voting": 2.046,
+        "proposed_viewpoint_fusion": 2.581
+      },
+      "metrics": {
+        "baseline1_direct_lifting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.366,
+              "f1": 0.5359,
+              "precision": 0.8142,
+              "recall": 0.3994,
+              "accuracy": 0.4813,
+              "tp": 2598,
+              "fp": 593,
+              "fn": 3907
+            },
+            "Heritage Structure": {
+              "iou": 0.3277,
+              "f1": 0.4936,
+              "precision": 0.4293,
+              "recall": 0.5805,
+              "accuracy": 0.7722,
+              "tp": 963,
+              "fp": 1280,
+              "fn": 696
+            },
+            "Vegetation": {
+              "iou": 0.1148,
+              "f1": 0.206,
+              "precision": 0.2372,
+              "recall": 0.182,
+              "accuracy": 0.9173,
+              "tp": 93,
+              "fp": 299,
+              "fn": 418
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.2695,
+            "mean_f1": 0.4118,
+            "mean_precision": 0.4936,
+            "mean_recall": 0.3873
+          }
+        },
+        "baseline2_majority_voting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.5273,
+              "f1": 0.6905,
+              "precision": 0.8088,
+              "recall": 0.6023,
+              "accuracy": 0.595,
+              "tp": 3918,
+              "fp": 926,
+              "fn": 2587
+            },
+            "Heritage Structure": {
+              "iou": 0.4194,
+              "f1": 0.5909,
+              "precision": 0.6757,
+              "recall": 0.525,
+              "accuracy": 0.861,
+              "tp": 871,
+              "fp": 418,
+              "fn": 788
+            },
+            "Vegetation": {
+              "iou": 0.1336,
+              "f1": 0.2357,
+              "precision": 0.6325,
+              "recall": 0.1448,
+              "accuracy": 0.9447,
+              "tp": 74,
+              "fp": 43,
+              "fn": 437
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3601,
+            "mean_f1": 0.5057,
+            "mean_precision": 0.7057,
+            "mean_recall": 0.424
+          }
+        },
+        "proposed_viewpoint_fusion": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.3983,
+              "f1": 0.5697,
+              "precision": 0.8099,
+              "recall": 0.4394,
+              "accuracy": 0.5022,
+              "tp": 2858,
+              "fp": 671,
+              "fn": 3647
+            },
+            "Heritage Structure": {
+              "iou": 0.2527,
+              "f1": 0.4034,
+              "precision": 0.5225,
+              "recall": 0.3285,
+              "accuracy": 0.8142,
+              "tp": 545,
+              "fp": 498,
+              "fn": 1114
+            },
+            "Vegetation": {
+              "iou": 0.1697,
+              "f1": 0.2901,
+              "precision": 0.5049,
+              "recall": 0.2035,
+              "accuracy": 0.9413,
+              "tp": 104,
+              "fp": 102,
+              "fn": 407
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.2736,
+            "mean_f1": 0.4211,
+            "mean_precision": 0.6124,
+            "mean_recall": 0.3238
+          }
+        },
+        "ablation_without_zbuffer": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.5163,
+              "f1": 0.681,
+              "precision": 0.8241,
+              "recall": 0.5803,
+              "accuracy": 0.5924,
+              "tp": 3775,
+              "fp": 806,
+              "fn": 2730
+            },
+            "Heritage Structure": {
+              "iou": 0.4375,
+              "f1": 0.6087,
+              "precision": 0.6428,
+              "recall": 0.5781,
+              "accuracy": 0.8579,
+              "tp": 959,
+              "fp": 533,
+              "fn": 700
+            },
+            "Vegetation": {
+              "iou": 0.1813,
+              "f1": 0.307,
+              "precision": 0.6438,
+              "recall": 0.2016,
+              "accuracy": 0.9464,
+              "tp": 103,
+              "fp": 57,
+              "fn": 408
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3784,
+            "mean_f1": 0.5322,
+            "mean_precision": 0.7036,
+            "mean_recall": 0.4533
+          }
+        },
+        "ablation_without_normals": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.3987,
+              "f1": 0.5701,
+              "precision": 0.8096,
+              "recall": 0.44,
+              "accuracy": 0.5025,
+              "tp": 2862,
+              "fp": 673,
+              "fn": 3643
+            },
+            "Heritage Structure": {
+              "iou": 0.2527,
+              "f1": 0.4034,
+              "precision": 0.5257,
+              "recall": 0.3273,
+              "accuracy": 0.8149,
+              "tp": 543,
+              "fp": 490,
+              "fn": 1116
+            },
+            "Vegetation": {
+              "iou": 0.1716,
+              "f1": 0.2929,
+              "precision": 0.5097,
+              "recall": 0.2055,
+              "accuracy": 0.9416,
+              "tp": 105,
+              "fp": 101,
+              "fn": 406
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.2743,
+            "mean_f1": 0.4221,
+            "mean_precision": 0.615,
+            "mean_recall": 0.3243
+          }
+        }
+      },
+      "proposed_telemetry": {
+        "total_points": 8675,
+        "conflicts_resolved": 3337,
+        "total_rays_evaluated": 116306,
+        "occluded_rays_culled": 70640,
+        "backfaces_culled": 10,
+        "mean_uncertainty": 0.6002382040023804,
+        "high_confidence_ratio": 0.2219020172910663
+      }
+    },
+    {
+      "fold": 4,
+      "segmentation_backbone": "Meta SAM 2.1 (facebook/sam2.1-hiera-tiny)",
+      "triangulated_points": 7836,
+      "evaluated_points": 7235,
+      "camera_views": 20,
+      "timing_seconds": {
+        "sfm": 17.58,
+        "pca_normals": 0.214,
+        "baseline1_direct_lifting": 0.806,
+        "baseline2_majority_voting": 1.729,
+        "proposed_viewpoint_fusion": 2.215
+      },
+      "metrics": {
+        "baseline1_direct_lifting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.4683,
+              "f1": 0.6379,
+              "precision": 0.762,
+              "recall": 0.5486,
+              "accuracy": 0.5683,
+              "tp": 2751,
+              "fp": 859,
+              "fn": 2264
+            },
+            "Heritage Structure": {
+              "iou": 0.3881,
+              "f1": 0.5591,
+              "precision": 0.5154,
+              "recall": 0.611,
+              "accuracy": 0.7522,
+              "tp": 1137,
+              "fp": 1069,
+              "fn": 724
+            },
+            "Vegetation": {
+              "iou": 0.0764,
+              "f1": 0.1419,
+              "precision": 0.1322,
+              "recall": 0.1532,
+              "accuracy": 0.9081,
+              "tp": 55,
+              "fp": 361,
+              "fn": 304
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3109,
+            "mean_f1": 0.4463,
+            "mean_precision": 0.4699,
+            "mean_recall": 0.4376
+          }
+        },
+        "baseline2_majority_voting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.5922,
+              "f1": 0.7439,
+              "precision": 0.7662,
+              "recall": 0.7228,
+              "accuracy": 0.655,
+              "tp": 3625,
+              "fp": 1106,
+              "fn": 1390
+            },
+            "Heritage Structure": {
+              "iou": 0.3736,
+              "f1": 0.5439,
+              "precision": 0.6441,
+              "recall": 0.4707,
+              "accuracy": 0.797,
+              "tp": 876,
+              "fp": 484,
+              "fn": 985
+            },
+            "Vegetation": {
+              "iou": 0.0574,
+              "f1": 0.1086,
+              "precision": 0.1273,
+              "recall": 0.0947,
+              "accuracy": 0.9229,
+              "tp": 34,
+              "fp": 233,
+              "fn": 325
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3411,
+            "mean_f1": 0.4655,
+            "mean_precision": 0.5125,
+            "mean_recall": 0.4294
+          }
+        },
+        "proposed_viewpoint_fusion": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.4561,
+              "f1": 0.6265,
+              "precision": 0.7714,
+              "recall": 0.5274,
+              "accuracy": 0.5641,
+              "tp": 2645,
+              "fp": 784,
+              "fn": 2370
+            },
+            "Heritage Structure": {
+              "iou": 0.275,
+              "f1": 0.4313,
+              "precision": 0.5637,
+              "recall": 0.3493,
+              "accuracy": 0.7631,
+              "tp": 650,
+              "fp": 503,
+              "fn": 1211
+            },
+            "Vegetation": {
+              "iou": 0.0688,
+              "f1": 0.1288,
+              "precision": 0.2012,
+              "recall": 0.0947,
+              "accuracy": 0.9364,
+              "tp": 34,
+              "fp": 135,
+              "fn": 325
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.2666,
+            "mean_f1": 0.3955,
+            "mean_precision": 0.5121,
+            "mean_recall": 0.3238
+          }
+        },
+        "ablation_without_zbuffer": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.5852,
+              "f1": 0.7383,
+              "precision": 0.7802,
+              "recall": 0.7007,
+              "accuracy": 0.6557,
+              "tp": 3514,
+              "fp": 990,
+              "fn": 1501
+            },
+            "Heritage Structure": {
+              "iou": 0.3986,
+              "f1": 0.57,
+              "precision": 0.6328,
+              "recall": 0.5185,
+              "accuracy": 0.7988,
+              "tp": 965,
+              "fp": 560,
+              "fn": 896
+            },
+            "Vegetation": {
+              "iou": 0.0847,
+              "f1": 0.1562,
+              "precision": 0.1694,
+              "recall": 0.1448,
+              "accuracy": 0.9223,
+              "tp": 52,
+              "fp": 255,
+              "fn": 307
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3562,
+            "mean_f1": 0.4882,
+            "mean_precision": 0.5275,
+            "mean_recall": 0.4547
+          }
+        },
+        "ablation_without_normals": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.4542,
+              "f1": 0.6247,
+              "precision": 0.7689,
+              "recall": 0.526,
+              "accuracy": 0.5619,
+              "tp": 2638,
+              "fp": 793,
+              "fn": 2377
+            },
+            "Heritage Structure": {
+              "iou": 0.272,
+              "f1": 0.4277,
+              "precision": 0.5584,
+              "recall": 0.3466,
+              "accuracy": 0.7614,
+              "tp": 645,
+              "fp": 510,
+              "fn": 1216
+            },
+            "Vegetation": {
+              "iou": 0.0687,
+              "f1": 0.1285,
+              "precision": 0.2,
+              "recall": 0.0947,
+              "accuracy": 0.9363,
+              "tp": 34,
+              "fp": 136,
+              "fn": 325
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.265,
+            "mean_f1": 0.3936,
+            "mean_precision": 0.5091,
+            "mean_recall": 0.3224
+          }
+        }
+      },
+      "proposed_telemetry": {
+        "total_points": 7235,
+        "conflicts_resolved": 3289,
+        "total_rays_evaluated": 98343,
+        "occluded_rays_culled": 57104,
+        "backfaces_culled": 21,
+        "mean_uncertainty": 0.5300899744033813,
+        "high_confidence_ratio": 0.2630269523151348
+      }
+    },
+    {
+      "fold": 5,
+      "segmentation_backbone": "Meta SAM 2.1 (facebook/sam2.1-hiera-tiny)",
+      "triangulated_points": 7088,
+      "evaluated_points": 6508,
+      "camera_views": 20,
+      "timing_seconds": {
+        "sfm": 17.68,
+        "pca_normals": 0.193,
+        "baseline1_direct_lifting": 0.7,
+        "baseline2_majority_voting": 1.548,
+        "proposed_viewpoint_fusion": 2.16
+      },
+      "metrics": {
+        "baseline1_direct_lifting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.436,
+              "f1": 0.6072,
+              "precision": 0.7772,
+              "recall": 0.4983,
+              "accuracy": 0.5104,
+              "tp": 2463,
+              "fp": 706,
+              "fn": 2480
+            },
+            "Heritage Structure": {
+              "iou": 0.2478,
+              "f1": 0.3972,
+              "precision": 0.3059,
+              "recall": 0.5664,
+              "accuracy": 0.6918,
+              "tp": 661,
+              "fp": 1500,
+              "fn": 506
+            },
+            "Vegetation": {
+              "iou": 0.0692,
+              "f1": 0.1295,
+              "precision": 0.1239,
+              "recall": 0.1357,
+              "accuracy": 0.8884,
+              "tp": 54,
+              "fp": 382,
+              "fn": 344
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.251,
+            "mean_f1": 0.378,
+            "mean_precision": 0.4023,
+            "mean_recall": 0.4001
+          }
+        },
+        "baseline2_majority_voting": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.6651,
+              "f1": 0.7989,
+              "precision": 0.8265,
+              "recall": 0.773,
+              "accuracy": 0.7044,
+              "tp": 3821,
+              "fp": 802,
+              "fn": 1122
+            },
+            "Heritage Structure": {
+              "iou": 0.4407,
+              "f1": 0.6118,
+              "precision": 0.6785,
+              "recall": 0.557,
+              "accuracy": 0.8732,
+              "tp": 650,
+              "fp": 308,
+              "fn": 517
+            },
+            "Vegetation": {
+              "iou": 0.0627,
+              "f1": 0.118,
+              "precision": 0.1299,
+              "recall": 0.108,
+              "accuracy": 0.9012,
+              "tp": 43,
+              "fp": 288,
+              "fn": 355
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.3895,
+            "mean_f1": 0.5096,
+            "mean_precision": 0.545,
+            "mean_recall": 0.4793
+          }
+        },
+        "proposed_viewpoint_fusion": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.4581,
+              "f1": 0.6283,
+              "precision": 0.825,
+              "recall": 0.5074,
+              "accuracy": 0.5441,
+              "tp": 2508,
+              "fp": 532,
+              "fn": 2435
+            },
+            "Heritage Structure": {
+              "iou": 0.2184,
+              "f1": 0.3584,
+              "precision": 0.5368,
+              "recall": 0.2691,
+              "accuracy": 0.8273,
+              "tp": 314,
+              "fp": 271,
+              "fn": 853
+            },
+            "Vegetation": {
+              "iou": 0.0826,
+              "f1": 0.1526,
+              "precision": 0.1667,
+              "recall": 0.1407,
+              "accuracy": 0.9044,
+              "tp": 56,
+              "fp": 280,
+              "fn": 342
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.253,
+            "mean_f1": 0.3798,
+            "mean_precision": 0.5095,
+            "mean_recall": 0.3057
+          }
+        },
+        "ablation_without_zbuffer": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.661,
+              "f1": 0.7959,
+              "precision": 0.8415,
+              "recall": 0.755,
+              "accuracy": 0.7059,
+              "tp": 3732,
+              "fp": 703,
+              "fn": 1211
+            },
+            "Heritage Structure": {
+              "iou": 0.4742,
+              "f1": 0.6433,
+              "precision": 0.6661,
+              "recall": 0.6221,
+              "accuracy": 0.8763,
+              "tp": 726,
+              "fp": 364,
+              "fn": 441
+            },
+            "Vegetation": {
+              "iou": 0.0872,
+              "f1": 0.1604,
+              "precision": 0.1653,
+              "recall": 0.1558,
+              "accuracy": 0.9003,
+              "tp": 62,
+              "fp": 313,
+              "fn": 336
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.4075,
+            "mean_f1": 0.5332,
+            "mean_precision": 0.5576,
+            "mean_recall": 0.511
+          }
+        },
+        "ablation_without_normals": {
+          "per_class": {
+            "Ground / Geology": {
+              "iou": 0.4579,
+              "f1": 0.6282,
+              "precision": 0.8245,
+              "recall": 0.5074,
+              "accuracy": 0.5438,
+              "tp": 2508,
+              "fp": 534,
+              "fn": 2435
+            },
+            "Heritage Structure": {
+              "iou": 0.2171,
+              "f1": 0.3568,
+              "precision": 0.5361,
+              "recall": 0.2674,
+              "accuracy": 0.8271,
+              "tp": 312,
+              "fp": 270,
+              "fn": 855
+            },
+            "Vegetation": {
+              "iou": 0.0828,
+              "f1": 0.153,
+              "precision": 0.1677,
+              "recall": 0.1407,
+              "accuracy": 0.9047,
+              "tp": 56,
+              "fp": 278,
+              "fn": 342
+            }
+          },
+          "macro_average": {
+            "mean_iou": 0.2526,
+            "mean_f1": 0.3793,
+            "mean_precision": 0.5094,
+            "mean_recall": 0.3052
+          }
+        }
+      },
+      "proposed_telemetry": {
+        "total_points": 6508,
+        "conflicts_resolved": 2908,
+        "total_rays_evaluated": 87469,
+        "occluded_rays_culled": 38864,
+        "backfaces_culled": 58,
+        "mean_uncertainty": 0.5699753761291504,
+        "high_confidence_ratio": 0.23509526736324524
+      }
+    }
+  ]
+}
