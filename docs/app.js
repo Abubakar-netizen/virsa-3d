@@ -245,6 +245,10 @@ function loadDevelopmentModel(lodType = "fast") {
 
       activeModelMesh = gltf.scene;
 
+      // Align 3D coordinate axes: glTF Y-elevation -> Three.js Z-up
+      activeModelMesh.rotation.x = Math.PI / 2;
+      activeModelMesh.updateMatrixWorld(true);
+
       // Center and align geometry to coordinate origin
       const box = new THREE.Box3().setFromObject(activeModelMesh);
       const center = box.getCenter(new THREE.Vector3());
