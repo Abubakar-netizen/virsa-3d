@@ -782,10 +782,21 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+let loadingTimer = null;
 function showLoading(show, title = "", sub = "") {
   const overlay = document.getElementById("loading-overlay");
   if (!overlay) return;
+  if (loadingTimer) {
+    clearTimeout(loadingTimer);
+    loadingTimer = null;
+  }
   overlay.style.display = show ? "flex" : "none";
   if (title) document.getElementById("loading-text").innerText = title;
   if (sub) document.getElementById("loading-sub").innerText = sub;
+  if (show) {
+    // Safety timeout: automatically dismiss overlay after 3 seconds to guarantee UI responsiveness
+    loadingTimer = setTimeout(() => {
+      overlay.style.display = "none";
+    }, 3000);
+  }
 }
